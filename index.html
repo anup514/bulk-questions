@@ -240,15 +240,14 @@
                     </button>
                 </div>
             </header>
-            <main class="flex flex-1 justify-center py-8">
+            <main class="flex flex-1 justify-center py-4">
                 <div class="layout-content-container flex flex-col max-w-[960px] flex-1 px-4 md:px-10">
-                    <!-- Title Section -->
-                    <div class="mb-6">
-                        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Student Question Bank</h1>
-                    </div>
+                    <!-- Pagination -->
+                    <div class="h-[3.75rem]" aria-hidden="true"></div>
+                    <div id="pagination-container" class="fixed top-16 left-0 right-0 z-40 flex justify-center items-center gap-2 py-2 px-3 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm"></div>
                     <!-- Filter Bar -->
                     <div
-                        class="flex flex-wrap gap-3 mb-8 p-4 bg-white dark:bg-background-dark/50 rounded-xl border border-primary/10">
+                        class="flex flex-wrap gap-3 mb-4 p-4 bg-white dark:bg-background-dark/50 rounded-xl border border-primary/10">
                         <select id="filter-level"
                             class="h-10 rounded-lg bg-primary/10 hover:bg-primary/20 px-4 text-primary text-sm font-semibold border-0 cursor-pointer focus:ring-2 focus:ring-primary">
                             <option value="">Level: All</option>
@@ -282,10 +281,8 @@
                         </button>
                     </div>
                     <!-- Question Feed -->
-                    <div class="flex flex-col gap-6">
-                        <!-- Pagination -->
-                        <div id="pagination-container" class="sticky top-16 z-30 flex justify-center items-center gap-2 py-3 mb-4 flex-wrap bg-background-light/95 dark:bg-background-dark/95 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm"></div>
-                        <div id="question-feed" class="flex flex-col gap-6"></div>
+                    <div class="flex flex-col gap-3">
+                        <div id="question-feed" class="flex flex-col gap-4"></div>
                         <div id="question-feed-loading" class="text-center py-12 text-slate-500 dark:text-slate-400 hidden">Loading questions...</div>
                         <div id="question-feed-empty" class="text-center py-12 text-slate-500 dark:text-slate-400 hidden">No questions found. Add some from the Add Question page.</div>
                         <!-- Template (hidden, cloned by JS) -->
@@ -748,14 +745,35 @@
         prev.addEventListener('click', () => { questionBankState.page = Math.max(0, page - 1); loadQuestions(); });
         container.appendChild(prev);
 
-        for (let i = 0; i < totalPages; i++) {
+        function addPageButton(i) {
             const btn = document.createElement('button');
-            btn.className = 'flex size-10 items-center justify-center rounded-lg border border-transparent text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all';
-            if (i === page) btn.className = 'flex size-10 items-center justify-center rounded-lg bg-primary text-white font-bold';
+            btn.className = 'flex h-9 min-w-9 px-2 items-center justify-center rounded-lg border border-transparent text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all';
+            if (i === page) btn.className = 'flex h-9 min-w-9 px-2 items-center justify-center rounded-lg bg-primary text-white font-bold';
             btn.textContent = i + 1;
-            const p = i;
-            btn.addEventListener('click', () => { questionBankState.page = p; loadQuestions(); });
+            btn.title = 'Page ' + (i + 1);
+            btn.addEventListener('click', () => { questionBankState.page = i; loadQuestions(); });
             container.appendChild(btn);
+        }
+
+        function addEllipsis() {
+            const dots = document.createElement('span');
+            dots.className = 'px-1 text-slate-400 dark:text-slate-500 select-none';
+            dots.textContent = '...';
+            container.appendChild(dots);
+        }
+
+        if (totalPages <= 11) {
+            for (let i = 0; i < totalPages; i++) addPageButton(i);
+        } else {
+            addPageButton(0);
+            const start = Math.max(1, page - 2);
+            const end = Math.min(totalPages - 2, page + 2);
+
+            if (start > 1) addEllipsis();
+            for (let i = start; i <= end; i++) addPageButton(i);
+            if (end < totalPages - 2) addEllipsis();
+
+            addPageButton(totalPages - 1);
         }
 
         const next = document.createElement('button');
@@ -764,6 +782,36 @@
         next.disabled = page >= totalPages - 1;
         next.addEventListener('click', () => { questionBankState.page = Math.min(totalPages - 1, page + 1); loadQuestions(); });
         container.appendChild(next);
+
+        const jumpWrap = document.createElement('div');
+        jumpWrap.className = 'ml-1 flex items-center gap-2';
+        const jumpInput = document.createElement('input');
+        jumpInput.type = 'number';
+        jumpInput.min = '1';
+        jumpInput.max = String(totalPages);
+        jumpInput.placeholder = 'Page';
+        jumpInput.className = 'h-9 w-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-background-dark px-2 text-sm text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary';
+
+        const jumpBtn = document.createElement('button');
+        jumpBtn.type = 'button';
+        jumpBtn.className = 'h-9 px-3 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors';
+        jumpBtn.textContent = 'Go';
+
+        function goToTypedPage() {
+            const raw = (jumpInput.value || '').trim();
+            const target = parseInt(raw, 10);
+            if (!target || target < 1 || target > totalPages) return;
+            questionBankState.page = target - 1;
+            loadQuestions();
+        }
+
+        jumpBtn.addEventListener('click', goToTypedPage);
+        jumpInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') goToTypedPage();
+        });
+        jumpWrap.appendChild(jumpInput);
+        jumpWrap.appendChild(jumpBtn);
+        container.appendChild(jumpWrap);
     }
 
     async function deleteAllQuestions() {
