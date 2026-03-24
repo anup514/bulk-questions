@@ -106,6 +106,9 @@
         }
         .katex { color: inherit; }
         .math-display { overflow-x: auto; }
+        .correct-option-label input[type="radio"] {
+            accent-color: #0f766e;
+        }
     </style>
     <script>
         function formatInlineMarkdown(str) {
@@ -534,6 +537,24 @@
         renderPagination();
     }
 
+    function updateCorrectAnswerVisuals(card, letters, correctLetter) {
+        letters.forEach(letter => {
+            const wrap = card.querySelector('.option-wrapper[data-option-letter="' + letter + '"]');
+            if (!wrap) return;
+            const isCorrect = !!correctLetter && letter === correctLetter;
+            wrap.className = 'option-wrapper flex gap-3 p-3 rounded-lg border text-left transition-all group w-full ' + (isCorrect ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700');
+            const letterEl = wrap.querySelector('.option-letter');
+            if (letterEl) {
+                letterEl.className = 'option-letter flex items-center justify-center shrink-0 size-8 rounded-full font-bold text-sm ' + (isCorrect ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400');
+            }
+            const optText = wrap.querySelector('.option-text');
+            if (optText) {
+                const hidden = optText.classList.contains('hidden');
+                optText.className = (hidden ? 'option-text hidden ' : 'option-text ') + (isCorrect ? 'text-slate-900 dark:text-slate-100 font-medium' : 'text-slate-700 dark:text-slate-300');
+            }
+        });
+    }
+
     function renderQuestionCard(question, opts) {
         const t = document.getElementById('question-card-template');
         const clone = t.content.cloneNode(true);
@@ -569,6 +590,14 @@
         stemEl.classList.add('rendered-markdown');
         stemEl.innerHTML = renderFormattedText(question.stem || '');
 
+        const actionsRow = document.createElement('div');
+        actionsRow.className = 'question-inline-edit-actions hidden flex flex-wrap items-center gap-2 mt-3';
+        actionsRow.innerHTML =
+            '<button type="button" class="save-inline-edit-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-50">' +
+            '<span class="material-symbols-outlined text-base">save</span>Save</button>' +
+            '<button type="button" class="cancel-inline-edit-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>' +
+            '<span class="inline-edit-status text-xs text-slate-500 dark:text-slate-400"></span>';
+
         const optionsGrid = card.querySelector('.question-options');
         const letters = ['A', 'B', 'C', 'D'];
         const optMap = {};
@@ -579,8 +608,14 @@
             const isCorrect = o.is_correct === true;
 
             const div = document.createElement('div');
+            div.setAttribute('data-option-letter', letter);
             div.className = 'option-wrapper flex gap-3 p-3 rounded-lg border text-left transition-all group w-full ' + (isCorrect ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700');
+            const radioDisabled = !o.id ? ' disabled' : '';
+            const radioChecked = isCorrect ? ' checked' : '';
             div.innerHTML =
+                '<label class="correct-option-label flex items-center shrink-0 self-center cursor-pointer pt-0.5" title="Correct answer">' +
+                '<input type="radio" name="correct-answer-' + question.id + '" value="' + letter + '" class="size-4 text-primary border-slate-300 focus:ring-primary dark:border-slate-600 dark:bg-slate-800"' + radioChecked + radioDisabled + '/>' +
+                '</label>' +
                 '<div class="option-letter flex items-center justify-center shrink-0 size-8 rounded-full font-bold text-sm ' + (isCorrect ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400') + '">' + letter + '</div>' +
                 '<div class="option-content flex flex-col gap-2 min-w-0 flex-1">' +
                 '<span class="option-text ' + (isCorrect ? 'text-slate-900 dark:text-slate-100 font-medium' : 'text-slate-700 dark:text-slate-300') + '">' + renderTextWithLatex(o.option_text || '') + '</span>' +
@@ -605,7 +640,203 @@
                 ta.addEventListener('paste', () => setTimeout(resizeExpTextarea, 0));
                 resizeExpTextarea();
             }
+
+            const correctRadio = div.querySelector('input[type="radio"]');
+            if (correctRadio && o.id) {
+                correctRadio.addEventListener('change', async () => {
+                    if (!correctRadio.checked) return;
+                    const newLetter = correctRadio.value;
+                    const previousCorrect = letters.find(l => optMap[l] && optMap[l].is_correct === true) || null;
+                    const setRadioDisabledState = () => {
+                        card.querySelectorAll('input[name="correct-answer-' + question.id + '"]').forEach(r => {
+                            const L = r.value;
+                            r.disabled = !optMap[L] || !optMap[L].id;
+                        });
+                    };
+                    if (!window.supabase) {
+                        alert('Supabase not configured.');
+                        setRadioDisabledState();
+                        if (previousCorrect) {
+                            const pr = card.querySelector('input[name="correct-answer-' + question.id + '"][value="' + previousCorrect + '"]');
+                            if (pr) pr.checked = true;
+                        }
+                        return;
+                    }
+                    card.querySelectorAll('input[name="correct-answer-' + question.id + '"]').forEach(r => { r.disabled = true; });
+                    let err = null;
+                    await Promise.all(letters.map(l => {
+                        const row = optMap[l];
+                        if (!row || !row.id) return Promise.resolve();
+                        return window.supabase.from('options').update({ is_correct: l === newLetter }).eq('id', row.id).then(res => {
+                            if (res.error) err = res.error;
+                        });
+                    }));
+                    if (err) {
+                        alert('Failed to update correct answer: ' + err.message);
+                        letters.forEach(l => {
+                            if (optMap[l]) optMap[l].is_correct = l === previousCorrect;
+                        });
+                        updateCorrectAnswerVisuals(card, letters, previousCorrect);
+                        card.querySelectorAll('input[name="correct-answer-' + question.id + '"]').forEach(r => {
+                            r.checked = previousCorrect ? r.value === previousCorrect : false;
+                        });
+                    } else {
+                        letters.forEach(l => {
+                            if (optMap[l]) optMap[l].is_correct = l === newLetter;
+                        });
+                        updateCorrectAnswerVisuals(card, letters, newLetter);
+                    }
+                    setRadioDisabledState();
+                });
+            }
+
             optionsGrid.appendChild(div);
+        });
+
+        let cardIsEditing = false;
+
+        function exitInlineEdit() {
+            cardIsEditing = false;
+            actionsRow.classList.add('hidden');
+            if (card.querySelectorAll('.option-exp-input').length === 0) saveAllWrapper.classList.add('hidden');
+            else saveAllWrapper.classList.remove('hidden');
+            const eb = card.querySelector('.edit-btn');
+            if (eb) {
+                eb.classList.remove('text-blue-500', 'dark:text-blue-400');
+                eb.setAttribute('title', 'Edit question');
+            }
+            const stemTa = stemEl.querySelector('.question-stem-input');
+            if (stemTa) stemTa.remove();
+            letters.forEach(letter => {
+                const wrap = card.querySelector('.option-wrapper[data-option-letter="' + letter + '"]');
+                if (!wrap) return;
+                const ota = wrap.querySelector('.question-option-input');
+                if (ota) ota.remove();
+                const eta = wrap.querySelector('.question-exp-input');
+                if (eta) eta.remove();
+                const span = wrap.querySelector('.option-text');
+                if (span) span.classList.remove('hidden');
+                const expEl = wrap.querySelector('.explanation-container');
+                if (expEl) expEl.classList.remove('hidden');
+                const baseExpInput = wrap.querySelector('.option-exp-input');
+                const baseExpWrap = baseExpInput ? baseExpInput.closest('.mt-2') : null;
+                if (baseExpWrap) {
+                    const hasExplanation = !!((optMap[letter] && optMap[letter].explanation) || '').trim();
+                    baseExpWrap.classList.toggle('hidden', hasExplanation);
+                    if (!hasExplanation && baseExpInput) baseExpInput.value = '';
+                }
+            });
+            stemEl.classList.add('rendered-markdown');
+            stemEl.innerHTML = renderFormattedText(question.stem || '');
+            letters.forEach(letter => {
+                const wrap = card.querySelector('.option-wrapper[data-option-letter="' + letter + '"]');
+                if (!wrap) return;
+                const span = wrap.querySelector('.option-text');
+                if (span) span.innerHTML = renderTextWithLatex((optMap[letter] && optMap[letter].option_text) || '');
+                const expEl = wrap.querySelector('.explanation-container');
+                if (expEl) {
+                    const exp = (optMap[letter] && optMap[letter].explanation) || '';
+                    expEl.innerHTML = exp ? renderFormattedText(exp) : '';
+                }
+            });
+            const cl = letters.find(l => optMap[l] && optMap[l].is_correct) || null;
+            updateCorrectAnswerVisuals(card, letters, cl);
+            const st = actionsRow.querySelector('.inline-edit-status');
+            if (st) {
+                st.textContent = '';
+                st.className = 'inline-edit-status text-xs text-slate-500 dark:text-slate-400';
+            }
+        }
+
+        function enterInlineEdit() {
+            cardIsEditing = true;
+            actionsRow.classList.remove('hidden');
+            saveAllWrapper.classList.add('hidden');
+            const eb = card.querySelector('.edit-btn');
+            if (eb) {
+                eb.classList.add('text-blue-500', 'dark:text-blue-400');
+                eb.setAttribute('title', 'Cancel editing');
+            }
+            stemEl.classList.remove('rendered-markdown');
+            stemEl.innerHTML = '';
+            const stemTa = document.createElement('textarea');
+            stemTa.className = 'question-stem-input w-full min-h-[7rem] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-background-dark text-slate-900 dark:text-slate-100 text-base font-normal leading-relaxed px-3 py-2 focus:ring-2 focus:ring-primary';
+            stemTa.value = question.stem || '';
+            stemEl.appendChild(stemTa);
+            letters.forEach(letter => {
+                const wrap = card.querySelector('.option-wrapper[data-option-letter="' + letter + '"]');
+                if (!wrap) return;
+                const span = wrap.querySelector('.option-text');
+                if (!span || wrap.querySelector('.question-option-input')) return;
+                span.classList.add('hidden');
+                const o = optMap[letter] || {};
+                const ota = document.createElement('textarea');
+                ota.className = 'question-option-input w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-background-dark text-sm px-3 py-2 focus:ring-2 focus:ring-primary min-h-[3rem] resize-y';
+                ota.value = o.option_text || '';
+                ota.setAttribute('data-option-letter', letter);
+                span.insertAdjacentElement('afterend', ota);
+
+                const expEl = wrap.querySelector('.explanation-container');
+                if (expEl) expEl.classList.add('hidden');
+                const baseExpInput = wrap.querySelector('.option-exp-input');
+                const baseExpWrap = baseExpInput ? baseExpInput.closest('.mt-2') : null;
+                if (baseExpWrap) baseExpWrap.classList.add('hidden');
+
+                const eta = document.createElement('textarea');
+                eta.className = 'question-exp-input w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-background-dark text-sm px-3 py-2 focus:ring-2 focus:ring-primary min-h-[4.5rem] resize-y';
+                eta.value = o.explanation || '';
+                eta.setAttribute('data-option-letter', letter);
+                eta.placeholder = 'Edit explanation for option ' + letter + '...';
+                ota.insertAdjacentElement('afterend', eta);
+            });
+        }
+
+        actionsRow.querySelector('.cancel-inline-edit-btn').addEventListener('click', () => exitInlineEdit());
+        actionsRow.querySelector('.save-inline-edit-btn').addEventListener('click', async () => {
+            const btn = actionsRow.querySelector('.save-inline-edit-btn');
+            const status = actionsRow.querySelector('.inline-edit-status');
+            if (!window.supabase) {
+                status.textContent = 'Supabase not configured.';
+                status.className = 'inline-edit-status text-xs text-red-500 dark:text-red-400';
+                return;
+            }
+            const stemTa = stemEl.querySelector('.question-stem-input');
+            const newStem = stemTa ? stemTa.value : question.stem;
+            btn.disabled = true;
+            status.textContent = 'Saving...';
+            status.className = 'inline-edit-status text-xs text-slate-500 dark:text-slate-400';
+            const { error: qErr } = await window.supabase.from('questions').update({ stem: newStem }).eq('id', question.id);
+            if (qErr) {
+                status.textContent = 'Failed: ' + qErr.message;
+                status.className = 'inline-edit-status text-xs text-red-500 dark:text-red-400';
+                btn.disabled = false;
+                return;
+            }
+            question.stem = newStem;
+            let optErr = null;
+            await Promise.all(letters.map(async letter => {
+                const wrap = card.querySelector('.option-wrapper[data-option-letter="' + letter + '"]');
+                const ota = wrap && wrap.querySelector('.question-option-input');
+                const eta = wrap && wrap.querySelector('.question-exp-input');
+                const row = optMap[letter];
+                if (!ota || !eta || !row || !row.id) return;
+                const text = ota.value;
+                const explanation = (eta.value || '').trim();
+                const { error } = await window.supabase
+                    .from('options')
+                    .update({ option_text: text, explanation: explanation || null })
+                    .eq('id', row.id);
+                if (error) optErr = error;
+                else {
+                    row.option_text = text;
+                    row.explanation = explanation || null;
+                }
+            }));
+            btn.disabled = false;
+            if (optErr) {
+                alert('Stem saved, but an option failed to save: ' + optErr.message);
+            }
+            exitInlineEdit();
         });
 
         const saveAllWrapper = document.createElement('div');
@@ -706,10 +937,12 @@
             }
         });
         card.querySelector('.p-6').appendChild(saveAllWrapper);
+        card.querySelector('.p-6').appendChild(actionsRow);
 
         const editBtn = card.querySelector('.edit-btn');
         editBtn.addEventListener('click', () => {
-            window.location.href = 'add-question.html?edit=' + encodeURIComponent(question.id);
+            if (cardIsEditing) exitInlineEdit();
+            else enterInlineEdit();
         });
 
         const deleteBtn = card.querySelector('.delete-btn');
