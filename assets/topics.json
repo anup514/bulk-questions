@@ -1,0 +1,1317 @@
+[
+  {
+    "id": 1,
+    "subject_tag_id": 1,
+    "name": "Pre-historic Period"
+  },
+  {
+    "id": 2,
+    "subject_tag_id": 1,
+    "name": "Indus Valley Civilization"
+  },
+  {
+    "id": 3,
+    "subject_tag_id": 1,
+    "name": "Vedic Culture"
+  },
+  {
+    "id": 4,
+    "subject_tag_id": 1,
+    "name": "Buddhism & Jainism"
+  },
+  {
+    "id": 5,
+    "subject_tag_id": 1,
+    "name": "Mahajanapadas & Magadha Empire"
+  },
+  {
+    "id": 6,
+    "subject_tag_id": 1,
+    "name": "The Mauryan Empire"
+  },
+  {
+    "id": 7,
+    "subject_tag_id": 1,
+    "name": "Post-Mauryan Period"
+  },
+  {
+    "id": 8,
+    "subject_tag_id": 1,
+    "name": "The Sangam Age"
+  },
+  {
+    "id": 9,
+    "subject_tag_id": 1,
+    "name": "The Gupta Period"
+  },
+  {
+    "id": 10,
+    "subject_tag_id": 1,
+    "name": "Post-Gupta Period (Harsha)"
+  },
+  {
+    "id": 11,
+    "subject_tag_id": 1,
+    "name": "Ancient Indian Architecture & Literature"
+  },
+  {
+    "id": 12,
+    "subject_tag_id": 2,
+    "name": "Early Medieval Period"
+  },
+  {
+    "id": 13,
+    "subject_tag_id": 2,
+    "name": "The Delhi Sultanate"
+  },
+  {
+    "id": 14,
+    "subject_tag_id": 2,
+    "name": "The Vijayanagar & Bahmani Kingdoms"
+  },
+  {
+    "id": 15,
+    "subject_tag_id": 2,
+    "name": "Bhakti & Sufi Movements"
+  },
+  {
+    "id": 16,
+    "subject_tag_id": 2,
+    "name": "The Mughal Empire"
+  },
+  {
+    "id": 17,
+    "subject_tag_id": 2,
+    "name": "The Maratha Empire"
+  },
+  {
+    "id": 18,
+    "subject_tag_id": 2,
+    "name": "Later Mughals & Regional States"
+  },
+  {
+    "id": 19,
+    "subject_tag_id": 2,
+    "name": "Medieval Architecture & Literature"
+  },
+  {
+    "id": 20,
+    "subject_tag_id": 3,
+    "name": "Advent of Europeans"
+  },
+  {
+    "id": 21,
+    "subject_tag_id": 3,
+    "name": "British Expansion & Annexation Policies"
+  },
+  {
+    "id": 22,
+    "subject_tag_id": 3,
+    "name": "British Administrative & Land Revenue Systems"
+  },
+  {
+    "id": 23,
+    "subject_tag_id": 3,
+    "name": "Economic Impact of British Rule"
+  },
+  {
+    "id": 24,
+    "subject_tag_id": 3,
+    "name": "Socio-Religious Reform Movements"
+  },
+  {
+    "id": 25,
+    "subject_tag_id": 3,
+    "name": "Peasant, Tribal & Civil Uprisings"
+  },
+  {
+    "id": 26,
+    "subject_tag_id": 3,
+    "name": "The Revolt of 1857"
+  },
+  {
+    "id": 27,
+    "subject_tag_id": 3,
+    "name": "Development of Education & Press"
+  },
+  {
+    "id": 28,
+    "subject_tag_id": 3,
+    "name": "Indian National Congress: Foundation & Early Phases"
+  },
+  {
+    "id": 29,
+    "subject_tag_id": 3,
+    "name": "Partition of Bengal & Swadeshi Movement"
+  },
+  {
+    "id": 30,
+    "subject_tag_id": 3,
+    "name": "Revolutionary & Radical Movements"
+  },
+  {
+    "id": 31,
+    "subject_tag_id": 3,
+    "name": "Early Gandhian Satyagrahas (1915–1919)"
+  },
+  {
+    "id": 32,
+    "subject_tag_id": 3,
+    "name": "Non-Cooperation & Khilafat Movement"
+  },
+  {
+    "id": 33,
+    "subject_tag_id": 3,
+    "name": "The Inter-War Period (Simon Commission to Poona Pact)"
+  },
+  {
+    "id": 34,
+    "subject_tag_id": 3,
+    "name": "Civil Disobedience & Round Table Conferences"
+  },
+  {
+    "id": 35,
+    "subject_tag_id": 3,
+    "name": "Quit India Movement & Armed Struggles (including INA)"
+  },
+  {
+    "id": 36,
+    "subject_tag_id": 3,
+    "name": "Constitutional Development: Company Rule (1773–1853)"
+  },
+  {
+    "id": 37,
+    "subject_tag_id": 3,
+    "name": "Constitutional Development: Crown Rule (1858–1947)"
+  },
+  {
+    "id": 38,
+    "subject_tag_id": 3,
+    "name": "Governor-Generals & Viceroys"
+  },
+  {
+    "id": 39,
+    "subject_tag_id": 3,
+    "name": "The Road to Partition & Independence"
+  },
+  {
+    "id": 40,
+    "subject_tag_id": 4,
+    "name": "Origin & Evolution of Earth"
+  },
+  {
+    "id": 41,
+    "subject_tag_id": 4,
+    "name": "Geomorphology"
+  },
+  {
+    "id": 42,
+    "subject_tag_id": 4,
+    "name": "Landforms & their Evolution"
+  },
+  {
+    "id": 43,
+    "subject_tag_id": 4,
+    "name": "Climatology: Atmosphere & Temperature"
+  },
+  {
+    "id": 44,
+    "subject_tag_id": 4,
+    "name": "Climatology: Pressure & Winds"
+  },
+  {
+    "id": 45,
+    "subject_tag_id": 4,
+    "name": "Climatology: Water in Atmosphere"
+  },
+  {
+    "id": 46,
+    "subject_tag_id": 4,
+    "name": "Oceanography"
+  },
+  {
+    "id": 47,
+    "subject_tag_id": 4,
+    "name": "Biogeography"
+  },
+  {
+    "id": 48,
+    "subject_tag_id": 5,
+    "name": "Continents & Major Countries"
+  },
+  {
+    "id": 49,
+    "subject_tag_id": 5,
+    "name": "World Physical Features"
+  },
+  {
+    "id": 50,
+    "subject_tag_id": 5,
+    "name": "World Drainage System"
+  },
+  {
+    "id": 51,
+    "subject_tag_id": 5,
+    "name": "Economic Geography of World"
+  },
+  {
+    "id": 52,
+    "subject_tag_id": 5,
+    "name": "Transport & Communication (World)"
+  },
+  {
+    "id": 53,
+    "subject_tag_id": 5,
+    "name": "Atmospheric & Ocean Phenomena"
+  },
+  {
+    "id": 54,
+    "subject_tag_id": 6,
+    "name": "India: Location & Political"
+  },
+  {
+    "id": 55,
+    "subject_tag_id": 6,
+    "name": "Physiography of India"
+  },
+  {
+    "id": 56,
+    "subject_tag_id": 6,
+    "name": "Drainage System of India"
+  },
+  {
+    "id": 57,
+    "subject_tag_id": 6,
+    "name": "Climate of India"
+  },
+  {
+    "id": 58,
+    "subject_tag_id": 6,
+    "name": "Soils of India"
+  },
+  {
+    "id": 59,
+    "subject_tag_id": 6,
+    "name": "Natural Vegetation & Wildlife"
+  },
+  {
+    "id": 60,
+    "subject_tag_id": 6,
+    "name": "Agriculture in India"
+  },
+  {
+    "id": 61,
+    "subject_tag_id": 6,
+    "name": "Mineral & Energy Resources"
+  },
+  {
+    "id": 62,
+    "subject_tag_id": 6,
+    "name": "Transport & Communication"
+  },
+  {
+    "id": 63,
+    "subject_tag_id": 6,
+    "name": "Demography & Census"
+  },
+  {
+    "id": 64,
+    "subject_tag_id": 7,
+    "name": "Historical Background & Making of Constitution"
+  },
+  {
+    "id": 65,
+    "subject_tag_id": 7,
+    "name": "Salient Features of the Constitution"
+  },
+  {
+    "id": 66,
+    "subject_tag_id": 7,
+    "name": "Preamble"
+  },
+  {
+    "id": 67,
+    "subject_tag_id": 7,
+    "name": "Union & Its Territory"
+  },
+  {
+    "id": 68,
+    "subject_tag_id": 7,
+    "name": "Citizenship"
+  },
+  {
+    "id": 69,
+    "subject_tag_id": 7,
+    "name": "Fundamental Rights"
+  },
+  {
+    "id": 70,
+    "subject_tag_id": 7,
+    "name": "Directive Principles of State Policy"
+  },
+  {
+    "id": 71,
+    "subject_tag_id": 7,
+    "name": "Fundamental Duties"
+  },
+  {
+    "id": 72,
+    "subject_tag_id": 7,
+    "name": "Amendment of the Constitution"
+  },
+  {
+    "id": 73,
+    "subject_tag_id": 7,
+    "name": "Basic Structure of the Constitution"
+  },
+  {
+    "id": 74,
+    "subject_tag_id": 7,
+    "name": "Parliamentary System of Government"
+  },
+  {
+    "id": 75,
+    "subject_tag_id": 7,
+    "name": "Federal System of Government"
+  },
+  {
+    "id": 76,
+    "subject_tag_id": 7,
+    "name": "Union Executive"
+  },
+  {
+    "id": 77,
+    "subject_tag_id": 7,
+    "name": "Union Legislature (Parliament)"
+  },
+  {
+    "id": 78,
+    "subject_tag_id": 7,
+    "name": "Judiciary"
+  },
+  {
+    "id": 79,
+    "subject_tag_id": 7,
+    "name": "State Government"
+  },
+  {
+    "id": 80,
+    "subject_tag_id": 7,
+    "name": "Local Government"
+  },
+  {
+    "id": 81,
+    "subject_tag_id": 7,
+    "name": "Constitutional Bodies"
+  },
+  {
+    "id": 82,
+    "subject_tag_id": 7,
+    "name": "Non-Constitutional Bodies"
+  },
+  {
+    "id": 83,
+    "subject_tag_id": 7,
+    "name": "Political Dynamics"
+  },
+  {
+    "id": 84,
+    "subject_tag_id": 7,
+    "name": "Judgements & Doctrines"
+  },
+  {
+    "id": 85,
+    "subject_tag_id": 8,
+    "name": "Introduction to Economics"
+  },
+  {
+    "id": 86,
+    "subject_tag_id": 8,
+    "name": "Theory of Demand and Supply"
+  },
+  {
+    "id": 87,
+    "subject_tag_id": 8,
+    "name": "Production & Cost"
+  },
+  {
+    "id": 88,
+    "subject_tag_id": 8,
+    "name": "Market Structures"
+  },
+  {
+    "id": 89,
+    "subject_tag_id": 8,
+    "name": "National Income Accounting"
+  },
+  {
+    "id": 90,
+    "subject_tag_id": 8,
+    "name": "Money and Banking"
+  },
+  {
+    "id": 91,
+    "subject_tag_id": 8,
+    "name": "Inflation & Business Cycles"
+  },
+  {
+    "id": 92,
+    "subject_tag_id": 8,
+    "name": "Public Finance"
+  },
+  {
+    "id": 93,
+    "subject_tag_id": 8,
+    "name": "Balance of Payments"
+  },
+  {
+    "id": 94,
+    "subject_tag_id": 9,
+    "name": "Planning in India & NITI Aayog"
+  },
+  {
+    "id": 95,
+    "subject_tag_id": 9,
+    "name": "Indian Agriculture"
+  },
+  {
+    "id": 96,
+    "subject_tag_id": 9,
+    "name": "Indian Industry & Infrastructure"
+  },
+  {
+    "id": 97,
+    "subject_tag_id": 9,
+    "name": "Banking in India"
+  },
+  {
+    "id": 98,
+    "subject_tag_id": 9,
+    "name": "Financial Markets"
+  },
+  {
+    "id": 99,
+    "subject_tag_id": 9,
+    "name": "Public Finance in India"
+  },
+  {
+    "id": 100,
+    "subject_tag_id": 9,
+    "name": "Poverty & Unemployment"
+  },
+  {
+    "id": 101,
+    "subject_tag_id": 9,
+    "name": "External Sector & Organizations"
+  },
+  {
+    "id": 102,
+    "subject_tag_id": 9,
+    "name": "Social Sector & Human Development"
+  },
+  {
+    "id": 103,
+    "subject_tag_id": 10,
+    "name": "Units & Measurement"
+  },
+  {
+    "id": 104,
+    "subject_tag_id": 10,
+    "name": "Mechanics: Motion & Force"
+  },
+  {
+    "id": 105,
+    "subject_tag_id": 10,
+    "name": "Work, Energy & Power"
+  },
+  {
+    "id": 106,
+    "subject_tag_id": 10,
+    "name": "Gravitation"
+  },
+  {
+    "id": 107,
+    "subject_tag_id": 10,
+    "name": "Properties of Matter"
+  },
+  {
+    "id": 108,
+    "subject_tag_id": 10,
+    "name": "Heat & Thermodynamics"
+  },
+  {
+    "id": 109,
+    "subject_tag_id": 10,
+    "name": "Sound & Wave Motion"
+  },
+  {
+    "id": 110,
+    "subject_tag_id": 10,
+    "name": "Light (Optics)"
+  },
+  {
+    "id": 111,
+    "subject_tag_id": 10,
+    "name": "Electricity & Magnetism"
+  },
+  {
+    "id": 112,
+    "subject_tag_id": 10,
+    "name": "Modern Physics"
+  },
+  {
+    "id": 113,
+    "subject_tag_id": 10,
+    "name": "Inventions & Discoveries"
+  },
+  {
+    "id": 114,
+    "subject_tag_id": 11,
+    "name": "Matter & Atomic Structure"
+  },
+  {
+    "id": 115,
+    "subject_tag_id": 11,
+    "name": "Periodic Table"
+  },
+  {
+    "id": 116,
+    "subject_tag_id": 11,
+    "name": "Chemical Bonding & Reactions"
+  },
+  {
+    "id": 117,
+    "subject_tag_id": 11,
+    "name": "Acids, Bases & Salts"
+  },
+  {
+    "id": 118,
+    "subject_tag_id": 11,
+    "name": "Metals & Metallurgy"
+  },
+  {
+    "id": 119,
+    "subject_tag_id": 11,
+    "name": "Non-Metals"
+  },
+  {
+    "id": 120,
+    "subject_tag_id": 11,
+    "name": "Organic Chemistry"
+  },
+  {
+    "id": 121,
+    "subject_tag_id": 11,
+    "name": "Chemistry in Everyday Life"
+  },
+  {
+    "id": 122,
+    "subject_tag_id": 12,
+    "name": "Introduction & Classification"
+  },
+  {
+    "id": 123,
+    "subject_tag_id": 12,
+    "name": "Cytology (Cell Biology)"
+  },
+  {
+    "id": 124,
+    "subject_tag_id": 12,
+    "name": "Genetics & Evolution"
+  },
+  {
+    "id": 125,
+    "subject_tag_id": 12,
+    "name": "Botany: Plant Morphology & Physiology"
+  },
+  {
+    "id": 126,
+    "subject_tag_id": 12,
+    "name": "Human Physiology: Digestion & Respiration"
+  },
+  {
+    "id": 127,
+    "subject_tag_id": 12,
+    "name": "Human Physiology: Circulation & Excretion"
+  },
+  {
+    "id": 128,
+    "subject_tag_id": 12,
+    "name": "Human Physiology: Control & Coordination"
+  },
+  {
+    "id": 129,
+    "subject_tag_id": 12,
+    "name": "Human Physiology: Reproduction & Skeleton"
+  },
+  {
+    "id": 130,
+    "subject_tag_id": 12,
+    "name": "Nutrition (Vitamins & Minerals)"
+  },
+  {
+    "id": 131,
+    "subject_tag_id": 12,
+    "name": "Human Diseases & Immunology"
+  },
+  {
+    "id": 132,
+    "subject_tag_id": 12,
+    "name": "Economic Zoology & Botany"
+  },
+  {
+    "id": 133,
+    "subject_tag_id": 13,
+    "name": "Space Technology"
+  },
+  {
+    "id": 134,
+    "subject_tag_id": 13,
+    "name": "Defence Technology"
+  },
+  {
+    "id": 135,
+    "subject_tag_id": 13,
+    "name": "Biotechnology"
+  },
+  {
+    "id": 136,
+    "subject_tag_id": 13,
+    "name": "Information Technology"
+  },
+  {
+    "id": 137,
+    "subject_tag_id": 13,
+    "name": "Nanotechnology"
+  },
+  {
+    "id": 138,
+    "subject_tag_id": 13,
+    "name": "Nuclear Technology"
+  },
+  {
+    "id": 139,
+    "subject_tag_id": 13,
+    "name": "Intellectual Property Rights"
+  },
+  {
+    "id": 140,
+    "subject_tag_id": 14,
+    "name": "Ecology & Ecosystems"
+  },
+  {
+    "id": 141,
+    "subject_tag_id": 14,
+    "name": "Biodiversity"
+  },
+  {
+    "id": 142,
+    "subject_tag_id": 14,
+    "name": "Indian Biodiversity"
+  },
+  {
+    "id": 143,
+    "subject_tag_id": 14,
+    "name": "Protected Area Network"
+  },
+  {
+    "id": 144,
+    "subject_tag_id": 14,
+    "name": "Climate Change"
+  },
+  {
+    "id": 145,
+    "subject_tag_id": 14,
+    "name": "Environmental Pollution"
+  },
+  {
+    "id": 146,
+    "subject_tag_id": 14,
+    "name": "Environmental Acts & Policies"
+  },
+  {
+    "id": 147,
+    "subject_tag_id": 14,
+    "name": "International Conventions"
+  },
+  {
+    "id": 148,
+    "subject_tag_id": 14,
+    "name": "Organizations & Institutions"
+  },
+  {
+    "id": 149,
+    "subject_tag_id": 15,
+    "name": "Analogy"
+  },
+  {
+    "id": 150,
+    "subject_tag_id": 15,
+    "name": "Classification (Odd One Out)"
+  },
+  {
+    "id": 151,
+    "subject_tag_id": 15,
+    "name": "Coding-Decoding"
+  },
+  {
+    "id": 152,
+    "subject_tag_id": 15,
+    "name": "Series Completion"
+  },
+  {
+    "id": 153,
+    "subject_tag_id": 15,
+    "name": "Blood Relations"
+  },
+  {
+    "id": 154,
+    "subject_tag_id": 15,
+    "name": "Direction Sense Test"
+  },
+  {
+    "id": 155,
+    "subject_tag_id": 15,
+    "name": "Order & Ranking"
+  },
+  {
+    "id": 156,
+    "subject_tag_id": 15,
+    "name": "Syllogism"
+  },
+  {
+    "id": 157,
+    "subject_tag_id": 15,
+    "name": "Seating Arrangement & Puzzles"
+  },
+  {
+    "id": 158,
+    "subject_tag_id": 15,
+    "name": "Mathematical Operations"
+  },
+  {
+    "id": 159,
+    "subject_tag_id": 15,
+    "name": "Clocks & Calendars"
+  },
+  {
+    "id": 160,
+    "subject_tag_id": 15,
+    "name": "Non-Verbal: Visual Reasoning"
+  },
+  {
+    "id": 161,
+    "subject_tag_id": 15,
+    "name": "Critical Reasoning"
+  },
+  {
+    "id": 162,
+    "subject_tag_id": 16,
+    "name": "Number System"
+  },
+  {
+    "id": 163,
+    "subject_tag_id": 16,
+    "name": "HCF and LCM"
+  },
+  {
+    "id": 164,
+    "subject_tag_id": 16,
+    "name": "Average"
+  },
+  {
+    "id": 165,
+    "subject_tag_id": 16,
+    "name": "Problems on Ages"
+  },
+  {
+    "id": 166,
+    "subject_tag_id": 16,
+    "name": "Percentage"
+  },
+  {
+    "id": 167,
+    "subject_tag_id": 16,
+    "name": "Profit and Loss"
+  },
+  {
+    "id": 168,
+    "subject_tag_id": 16,
+    "name": "Ratio and Proportion"
+  },
+  {
+    "id": 169,
+    "subject_tag_id": 16,
+    "name": "Time and Work"
+  },
+  {
+    "id": 170,
+    "subject_tag_id": 16,
+    "name": "Time, Speed and Distance"
+  },
+  {
+    "id": 171,
+    "subject_tag_id": 16,
+    "name": "Simple & Compound Interest"
+  },
+  {
+    "id": 172,
+    "subject_tag_id": 16,
+    "name": "Mensuration (2D & 3D)"
+  },
+  {
+    "id": 173,
+    "subject_tag_id": 16,
+    "name": "Geometry"
+  },
+  {
+    "id": 174,
+    "subject_tag_id": 16,
+    "name": "Trigonometry"
+  },
+  {
+    "id": 175,
+    "subject_tag_id": 16,
+    "name": "Algebra"
+  },
+  {
+    "id": 176,
+    "subject_tag_id": 16,
+    "name": "Data Interpretation"
+  },
+  {
+    "id": 177,
+    "subject_tag_id": 17,
+    "name": "Tenses"
+  },
+  {
+    "id": 178,
+    "subject_tag_id": 17,
+    "name": "Voice (Active/Passive)"
+  },
+  {
+    "id": 179,
+    "subject_tag_id": 17,
+    "name": "Narration (Direct/Indirect)"
+  },
+  {
+    "id": 180,
+    "subject_tag_id": 17,
+    "name": "Parts of Speech"
+  },
+  {
+    "id": 181,
+    "subject_tag_id": 17,
+    "name": "Subject-Verb Agreement"
+  },
+  {
+    "id": 182,
+    "subject_tag_id": 17,
+    "name": "Articles"
+  },
+  {
+    "id": 183,
+    "subject_tag_id": 17,
+    "name": "Spotting Errors"
+  },
+  {
+    "id": 184,
+    "subject_tag_id": 17,
+    "name": "Sentence Improvement/Completion"
+  },
+  {
+    "id": 185,
+    "subject_tag_id": 17,
+    "name": "Vocabulary: Synonyms & Antonyms"
+  },
+  {
+    "id": 186,
+    "subject_tag_id": 17,
+    "name": "Idioms & Phrases"
+  },
+  {
+    "id": 187,
+    "subject_tag_id": 17,
+    "name": "One Word Substitution"
+  },
+  {
+    "id": 188,
+    "subject_tag_id": 17,
+    "name": "Cloze Test"
+  },
+  {
+    "id": 189,
+    "subject_tag_id": 17,
+    "name": "Reading Comprehension"
+  },
+  {
+    "id": 190,
+    "subject_tag_id": 17,
+    "name": "Para Jumbles"
+  },
+  {
+    "id": 191,
+    "subject_tag_id": 18,
+    "name": "Introduction to Computers"
+  },
+  {
+    "id": 192,
+    "subject_tag_id": 18,
+    "name": "Computer Architecture"
+  },
+  {
+    "id": 193,
+    "subject_tag_id": 18,
+    "name": "Computer Memory"
+  },
+  {
+    "id": 194,
+    "subject_tag_id": 18,
+    "name": "Computer Software"
+  },
+  {
+    "id": 195,
+    "subject_tag_id": 18,
+    "name": "Operating System"
+  },
+  {
+    "id": 196,
+    "subject_tag_id": 18,
+    "name": "Microsoft Office"
+  },
+  {
+    "id": 197,
+    "subject_tag_id": 18,
+    "name": "Database Concepts (DBMS)"
+  },
+  {
+    "id": 198,
+    "subject_tag_id": 18,
+    "name": "Networking & Internet"
+  },
+  {
+    "id": 199,
+    "subject_tag_id": 18,
+    "name": "Computer Security"
+  },
+  {
+    "id": 200,
+    "subject_tag_id": 18,
+    "name": "Number System & Logic Gates"
+  },
+  {
+    "id": 201,
+    "subject_tag_id": 19,
+    "name": "National Affairs"
+  },
+  {
+    "id": 202,
+    "subject_tag_id": 19,
+    "name": "International Affairs"
+  },
+  {
+    "id": 203,
+    "subject_tag_id": 19,
+    "name": "Economy & Banking News"
+  },
+  {
+    "id": 204,
+    "subject_tag_id": 19,
+    "name": "Science & Tech News"
+  },
+  {
+    "id": 205,
+    "subject_tag_id": 19,
+    "name": "Environment News"
+  },
+  {
+    "id": 206,
+    "subject_tag_id": 19,
+    "name": "Sports"
+  },
+  {
+    "id": 207,
+    "subject_tag_id": 19,
+    "name": "Awards & Honours"
+  },
+  {
+    "id": 208,
+    "subject_tag_id": 19,
+    "name": "Appointments & Resignations"
+  },
+  {
+    "id": 209,
+    "subject_tag_id": 19,
+    "name": "Books & Authors"
+  },
+  {
+    "id": 210,
+    "subject_tag_id": 19,
+    "name": "Important Days & Themes"
+  },
+  {
+    "id": 211,
+    "subject_tag_id": 19,
+    "name": "Defence & Military Exercises"
+  },
+  {
+    "id": 212,
+    "subject_tag_id": 20,
+    "name": "Firsts in India & World"
+  },
+  {
+    "id": 213,
+    "subject_tag_id": 20,
+    "name": "Superlatives (India & World)"
+  },
+  {
+    "id": 214,
+    "subject_tag_id": 20,
+    "name": "Books & Authors (Static)"
+  },
+  {
+    "id": 215,
+    "subject_tag_id": 20,
+    "name": "Important Days (Static)"
+  },
+  {
+    "id": 216,
+    "subject_tag_id": 20,
+    "name": "International Organizations"
+  },
+  {
+    "id": 217,
+    "subject_tag_id": 20,
+    "name": "Awards & Honours (Static)"
+  },
+  {
+    "id": 218,
+    "subject_tag_id": 20,
+    "name": "Sports (Static)"
+  },
+  {
+    "id": 219,
+    "subject_tag_id": 20,
+    "name": "Art & Culture (Static)"
+  },
+  {
+    "id": 220,
+    "subject_tag_id": 20,
+    "name": "National Symbols & Insignia"
+  },
+  {
+    "id": 221,
+    "subject_tag_id": 20,
+    "name": "Famous Places & Monuments"
+  },
+  {
+    "id": 222,
+    "subject_tag_id": 20,
+    "name": "Defence & Security"
+  },
+  {
+    "id": 223,
+    "subject_tag_id": 20,
+    "name": "Miscellaneous"
+  },
+  {
+    "id": 224,
+    "subject_tag_id": 21,
+    "name": "Renaissance and the Age of Discovery"
+  },
+  {
+    "id": 225,
+    "subject_tag_id": 21,
+    "name": "The American War of Independence"
+  },
+  {
+    "id": 226,
+    "subject_tag_id": 21,
+    "name": "The French Revolution: Causes and Impact"
+  },
+  {
+    "id": 227,
+    "subject_tag_id": 21,
+    "name": "Rise and Fall of Napoleon Bonaparte"
+  },
+  {
+    "id": 228,
+    "subject_tag_id": 21,
+    "name": "The Industrial Revolution and Its Global Effects"
+  },
+  {
+    "id": 229,
+    "subject_tag_id": 21,
+    "name": "Unification of Italy"
+  },
+  {
+    "id": 230,
+    "subject_tag_id": 21,
+    "name": "Unification of Germany"
+  },
+  {
+    "id": 231,
+    "subject_tag_id": 21,
+    "name": "The American Civil War"
+  },
+  {
+    "id": 232,
+    "subject_tag_id": 21,
+    "name": "Socialism and the Russian Revolution"
+  },
+  {
+    "id": 233,
+    "subject_tag_id": 21,
+    "name": "Colonialism and Imperialism in Asia"
+  },
+  {
+    "id": 234,
+    "subject_tag_id": 21,
+    "name": "Colonialism and Imperialism in Africa"
+  },
+  {
+    "id": 235,
+    "subject_tag_id": 21,
+    "name": "World War I: Origins and Global Scale"
+  },
+  {
+    "id": 236,
+    "subject_tag_id": 21,
+    "name": "The Treaty of Versailles and the League of Nations"
+  },
+  {
+    "id": 237,
+    "subject_tag_id": 21,
+    "name": "Rise of Fascism in Italy and Nazism in Germany"
+  },
+  {
+    "id": 238,
+    "subject_tag_id": 21,
+    "name": "The Great Depression and Economic Impacts"
+  },
+  {
+    "id": 239,
+    "subject_tag_id": 21,
+    "name": "World War II: Causes, Course, and Consequences"
+  },
+  {
+    "id": 240,
+    "subject_tag_id": 21,
+    "name": "The Formation and Role of the United Nations"
+  },
+  {
+    "id": 241,
+    "subject_tag_id": 21,
+    "name": "The Cold War Era and Military Alliances (NATO/Warsaw)"
+  },
+  {
+    "id": 242,
+    "subject_tag_id": 21,
+    "name": "Decolonization and Post-War National Movements"
+  },
+  {
+    "id": 243,
+    "subject_tag_id": 21,
+    "name": "Disintegration of the Soviet Union and Modern World Order"
+  },
+  {
+    "id": 244,
+    "subject_tag_id": 22,
+    "name": "Introduction to Disaster Management"
+  },
+  {
+    "id": 245,
+    "subject_tag_id": 22,
+    "name": "Natural Disasters: Earthquakes & Tsunamis"
+  },
+  {
+    "id": 246,
+    "subject_tag_id": 22,
+    "name": "Hydrological Disasters: Floods & Droughts"
+  },
+  {
+    "id": 247,
+    "subject_tag_id": 22,
+    "name": "Atmospheric Disasters: Cyclones & Heatwaves"
+  },
+  {
+    "id": 248,
+    "subject_tag_id": 22,
+    "name": "Geological Disasters: Landslides & Avalanches"
+  },
+  {
+    "id": 249,
+    "subject_tag_id": 22,
+    "name": "Man-made Disasters: NBC Threats"
+  },
+  {
+    "id": 250,
+    "subject_tag_id": 22,
+    "name": "Disaster Management Cycle: Mitigation & Recovery"
+  },
+  {
+    "id": 251,
+    "subject_tag_id": 22,
+    "name": "Institutional Framework: NDMA & NDRF"
+  },
+  {
+    "id": 252,
+    "subject_tag_id": 22,
+    "name": "International Frameworks: Sendai & Hyogo"
+  },
+  {
+    "id": 253,
+    "subject_tag_id": 22,
+    "name": "Case Studies & Indian Vulnerabilities"
+  },
+  {
+    "id": 254,
+    "subject_tag_id": 23,
+    "name": "India's Foreign Policy: Principles & Objectives"
+  },
+  {
+    "id": 255,
+    "subject_tag_id": 23,
+    "name": "India and its Neighborhood (SAARC, BIMSTEC)"
+  },
+  {
+    "id": 256,
+    "subject_tag_id": 23,
+    "name": "India and Major World Powers (USA, Russia, China)"
+  },
+  {
+    "id": 257,
+    "subject_tag_id": 23,
+    "name": "Bilateral Relations with Strategic Partners"
+  },
+  {
+    "id": 258,
+    "subject_tag_id": 23,
+    "name": "International Organizations: UN, WTO, IMF"
+  },
+  {
+    "id": 259,
+    "subject_tag_id": 23,
+    "name": "Regional Groupings: EU, ASEAN, BRICS, SCO"
+  },
+  {
+    "id": 260,
+    "subject_tag_id": 23,
+    "name": "Global Issues: Terrorism & Climate Diplomacy"
+  },
+  {
+    "id": 261,
+    "subject_tag_id": 23,
+    "name": "Strategic Areas: Indo-Pacific & Indian Ocean"
+  },
+  {
+    "id": 262,
+    "subject_tag_id": 23,
+    "name": "Indian Diaspora and Global Impact"
+  },
+  {
+    "id": 263,
+    "subject_tag_id": 23,
+    "name": "Important Global Summits & Treaties"
+  }
+]

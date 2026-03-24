@@ -1,0 +1,94 @@
+[
+  {
+    "id": 1,
+    "name": "Ancient Indian History"
+  },
+  {
+    "id": 2,
+    "name": "Medieval Indian History"
+  },
+  {
+    "id": 3,
+    "name": "Modern Indian History"
+  },
+  {
+    "id": 4,
+    "name": "Physical Geography"
+  },
+  {
+    "id": 5,
+    "name": "World Geography"
+  },
+  {
+    "id": 6,
+    "name": "Indian Geography"
+  },
+  {
+    "id": 7,
+    "name": "Indian Polity"
+  },
+  {
+    "id": 8,
+    "name": "Micro & Macro Economics"
+  },
+  {
+    "id": 9,
+    "name": "Indian Economy"
+  },
+  {
+    "id": 10,
+    "name": "Physics"
+  },
+  {
+    "id": 11,
+    "name": "Chemistry"
+  },
+  {
+    "id": 12,
+    "name": "Biology"
+  },
+  {
+    "id": 13,
+    "name": "Science & Technology"
+  },
+  {
+    "id": 14,
+    "name": "Environment & Ecology"
+  },
+  {
+    "id": 15,
+    "name": "Logic & Reasoning"
+  },
+  {
+    "id": 16,
+    "name": "Quantitative Aptitude"
+  },
+  {
+    "id": 17,
+    "name": "General English"
+  },
+  {
+    "id": 18,
+    "name": "Computer Application"
+  },
+  {
+    "id": 19,
+    "name": "Current Affairs"
+  },
+  {
+    "id": 20,
+    "name": "General Knowledge"
+  },
+  {
+    "id": 21,
+    "name": "World History"
+  },
+  {
+    "id": 22,
+    "name": "Disaster Management"
+  },
+  {
+    "id": 23,
+    "name": "International Relations"
+  }
+]

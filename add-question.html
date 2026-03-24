@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Add Question - ExamPrep AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="js/config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/paste-list-fix.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f766e",
+                        "primary-strong": "#0b4f4a",
+                        "background-light": "#f3f4f6",
+                        "background-dark": "#020617",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <script>
+        // Init dark mode immediately to avoid FOUC
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Bulk editor: show placeholder only when the whole editor is empty */
+        #raw-input-editor.is-empty-before .tiptap::before,
+        #raw-input-editor .tiptap.is-empty-before::before {
+            content: 'Type your questions here... Use [Q], [O1]–[O4], [E], [SUB], [TOP], [LEV], [ANS], [END].';
+            float: left;
+            height: 0;
+            color: #64748b;
+            pointer-events: none;
+        }
+        .dark #raw-input-editor.is-empty-before .tiptap::before,
+        .dark #raw-input-editor .tiptap.is-empty-before::before {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+    <header
+        class="fixed inset-x-0 top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-primary/10 bg-white dark:bg-background-dark px-6 md:px-10 py-3">
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-4 text-primary">
+                <div class="size-6">
+                    <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z"
+                            fill="currentColor"></path>
+                    </svg>
+                </div>
+            </div>
+            <nav class="hidden md:flex items-center gap-9">
+                <a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium leading-normal"
+                    href="index.html">Question Bank</a>
+                <a class="text-primary text-sm font-bold leading-normal border-b-2 border-primary"
+                    href="add-question.html">Add Question</a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-4">
+            <button onclick="toggleDarkMode()"
+                class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20">
+                <span id="dark-mode-icon" class="material-symbols-outlined">light_mode</span>
+            </button>
+        </div>
+    </header>
+    <main class="max-w-[1200px] mx-auto p-6 md:p-10 w-full flex flex-col gap-6 mt-16">
+        <div class="flex flex-col gap-2">
+            <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Add Questions</h1>
+            <p class="text-slate-600 dark:text-slate-400 text-sm">Bulk upload using the tagged format below.</p>
+        </div>
+        <div id="bulk-upload-view"
+            class="h-[700px] flex rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <!-- Left Panel: Dark Code Editor -->
+            <section
+                class="flex-1 flex flex-col bg-slate-900 overflow-hidden">
+                <div
+                    class="flex items-center justify-between px-4 py-2 bg-slate-950/50 border-b border-slate-800 shrink-0">
+                    <div class="flex gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
+                    </div>
+                    <span
+                        class="text-[10px] font-mono text-slate-500 uppercase tracking-widest shrink-0">raw_input.txt</span>
+                    <div class="flex items-center gap-3 shrink-0">
+                        <span class="text-[10px] text-slate-400 font-mono">Ctrl+Enter to submit</span>
+                        <button id="bulk-submit-btn" type="button"
+                            class="px-3 py-1 rounded-md bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-colors">
+                            Submit
+                        </button>
+                        <span class="text-xs text-slate-400 font-mono">UTF-8</span>
+                    </div>
+                </div>
+                <!-- Markdown formatting toolbar -->
+                <div class="flex items-center gap-1 px-4 py-2 bg-slate-950/80 border-b border-slate-800 shrink-0 flex-wrap">
+                    <button type="button" onclick="insertMarkdown('**','**','text')" title="Bold"
+                        class="flex items-center justify-center size-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors font-bold text-sm">B</button>
+                    <button type="button" onclick="insertMarkdown('*','*','text')" title="Italic"
+                        class="flex items-center justify-center size-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors italic font-serif text-sm">I</button>
+                    <button type="button" onclick="insertMarkdownLinePrefix('- ')" title="Bulleted list"
+                        class="flex items-center justify-center size-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                    </button>
+                    <button type="button" onclick="insertMarkdownLinePrefix('1. ')" title="Numbered list"
+                        class="flex items-center justify-center size-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m-4 4h10"/></svg>
+                    </button>
+                    <button type="button" onclick="insertMarkdown('```\n','\n```','code')" title="Code block"
+                        class="flex items-center justify-center size-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h4M4 10h4M4 14h4M4 18h4M10 6h10M10 10h10M10 14h10M10 18h10"/></svg>
+                    </button>
+                    <button type="button" onclick="insertMarkdown('<sup>','</sup>','2')" title="Superscript"
+                        class="flex items-center justify-center size-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors text-xs align-super">X<sup>2</sup></button>
+                    <button type="button" onclick="insertMarkdown('<sub>','</sub>','2')" title="Subscript"
+                        class="flex items-center justify-center size-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors text-xs">X<sub>2</sub></button>
+                    <button type="button" onclick="insertMarkdown('![](', ')', 'image-url')" title="Insert image"
+                        class="flex items-center justify-center size-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </button>
+                    <button type="button" onclick="insertMarkdown('$','$','x^2')" title="Inline math ($...$)"
+                        class="flex items-center justify-center px-2 h-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors text-xs font-mono">$x$</button>
+                    <button type="button" onclick="insertMarkdown('$$\n','\n$$','\\frac{a}{b}')" title="Display math block ($$...$$)"
+                        class="flex items-center justify-center px-2 h-8 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors text-xs font-mono">$$x$$</button>
+                    <button type="button" onclick="pasteAsPlainText()" title="Paste as plain text (preserves numbered lists)"
+                        class="flex items-center gap-1 px-2 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors text-xs">Paste plain</button>
+                </div>
+                <div id="raw-input-editor"
+                    class="flex-1 min-h-[200px] w-full p-4 font-mono text-sm text-slate-300 leading-relaxed focus:outline-none overflow-y-auto overscroll-contain [&_.tiptap]:min-h-full [&_.tiptap]:outline-none [&_.tiptap_p]:my-1 [&_.tiptap_p]:first:mt-0"></div>
+                <!-- Toolbar for tags -->
+                <div
+                    class="p-3 bg-slate-950 border-t border-slate-800 flex gap-2 overflow-x-auto no-scrollbar shrink-0">
+                    <button onclick="insertTag('[Q]')"
+                        class="px-2 py-1 text-[10px] bg-slate-800 text-primary border border-primary/30 rounded uppercase font-bold hover:bg-primary/10 shrink-0">Insert
+                        [Q]</button>
+                    <button onclick="insertTag('[O1]')"
+                        class="px-2 py-1 text-[10px] bg-slate-800 text-primary border border-primary/30 rounded uppercase font-bold hover:bg-primary/10 shrink-0">Insert
+                        [O1..4]</button>
+                    <button onclick="insertTag('[E]')"
+                        class="px-2 py-1 text-[10px] bg-slate-800 text-primary border border-primary/30 rounded uppercase font-bold hover:bg-primary/10 shrink-0">Insert
+                        [E]</button>
+                    <button onclick="insertTag('[SUB]')"
+                        class="px-2 py-1 text-[10px] bg-slate-800 text-primary border border-primary/30 rounded uppercase font-bold hover:bg-primary/10 shrink-0">Insert
+                        [SUB]</button>
+                    <button onclick="insertTag('[TOP]')"
+                        class="px-2 py-1 text-[10px] bg-slate-800 text-primary border border-primary/30 rounded uppercase font-bold hover:bg-primary/10 shrink-0">Insert
+                        [TOP]</button>
+                    <button onclick="insertTag('[LEV]')"
+                        class="px-2 py-1 text-[10px] bg-slate-800 text-primary border border-primary/30 rounded uppercase font-bold hover:bg-primary/10 shrink-0">Insert
+                        [LEV]</button>
+                    <button onclick="insertTag('[ANS]')"
+                        class="px-2 py-1 text-[10px] bg-slate-800 text-primary border border-primary/30 rounded uppercase font-bold hover:bg-primary/10 shrink-0">Insert
+                        [ANS]</button>
+                    <button onclick="insertTag('[END]')"
+                        class="px-2 py-1 text-[10px] bg-slate-800 text-primary border border-primary/30 rounded uppercase font-bold hover:bg-primary/10 shrink-0">Insert
+                        [END]</button>
+                    <button id="bulk-import-btn" type="button"
+                        class="px-3 py-1 text-[10px] bg-primary text-white border border-primary rounded uppercase font-bold hover:bg-primary/90 shrink-0 ml-2">
+                        Import to database
+                    </button>
+                    <button id="bulk-load-file-btn" type="button" title="Load question-bank-import.txt"
+                        class="px-2 py-1 text-[10px] bg-slate-700 text-slate-200 border border-slate-600 rounded uppercase font-bold hover:bg-slate-600 shrink-0">
+                        Load import file
+                    </button>
+                </div>
+                <div id="bulk-import-message" class="px-3 py-2 text-xs hidden"></div>
+            </section>
+        </div>
+    </main>
+
+    <script type="module">
+        import { Editor } from 'https://cdn.jsdelivr.net/npm/@tiptap/core@2.8.0/+esm';
+        import StarterKit from 'https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@2.8.0/+esm';
+        import Placeholder from 'https://cdn.jsdelivr.net/npm/@tiptap/extension-placeholder@2.8.0/+esm';
+
+        const el = document.getElementById('raw-input-editor');
+        if (el) {
+            window.bulkEditor = new Editor({
+                element: el,
+                extensions: [
+                    StarterKit.configure({ codeBlock: false }),
+                    Placeholder.configure({
+                        placeholder: 'Type your questions here... Use [Q], [O1]–[O4], [E], [SUB], [TOP], [LEV], [ANS], [END].',
+                        emptyEditorClass: 'is-empty-before',
+                        emptyNodeClass: 'empty-node',
+                        showOnlyCurrent: false,
+                    }),
+                ],
+                content: '',
+                editorProps: {
+                    attributes: {
+                        class: 'font-mono max-w-none min-h-full text-sm text-slate-300',
+                    },
+                },
+            });
+        }
+    </script>
+    <script>
+        function parseBulkRawText(text) {
+            const questions = [];
+            const blocks = text.split(/\[Q\]/i);
+            const levMap = { basic: 'easy', intermediate: 'medium', advanced: 'hard' };
+            for (let i = 1; i < blocks.length; i++) {
+                const block = blocks[i].trim();
+                let stem = '', o1 = '', o2 = '', o3 = '', o4 = '';
+                let ea = '', eb = '', ec = '', ed = '', generalE = '';
+                let subject = '', topics = [], difficulty = 'medium';
+                let correctLetter = 'A';
+                const normalized = block.replace(/\[(O1|O2|O3|O4|01|02|03|04|E|EA|EB|EC|ED|SUB|TOP|LEV|ANS|END)\]/gi, '\n[$1]');
+                const lines = normalized.split(/\r?\n/);
+                let currentTag = 'Q';
+                let currentContent = [];
+                function flush() {
+                    const s = currentContent.join('\n').trim();
+                    if (currentTag === 'Q') stem = s;
+                    else if (currentTag === 'O1') o1 = s;
+                    else if (currentTag === 'O2') o2 = s;
+                    else if (currentTag === 'O3') o3 = s;
+                    else if (currentTag === 'O4') o4 = s;
+                    else if (currentTag === 'E') generalE = s;
+                    else if (currentTag === 'EA') ea = s;
+                    else if (currentTag === 'EB') eb = s;
+                    else if (currentTag === 'EC') ec = s;
+                    else if (currentTag === 'ED') ed = s;
+                    else if (currentTag === 'SUB') subject = s;
+                    else if (currentTag === 'TOP') topics.push(s);
+                    else if (currentTag === 'LEV') difficulty = levMap[s.toLowerCase()] || 'medium';
+                    else if (currentTag === 'ANS') {
+                        const c = (s || '').trim().charAt(0).toUpperCase();
+                        if (['A', 'B', 'C', 'D'].includes(c)) correctLetter = c;
+                    }
+                    currentContent = [];
+                }
+                for (let j = 0; j < lines.length; j++) {
+                    const line = lines[j];
+                    const match = line.match(/^\[(O1|O2|O3|O4|01|02|03|04|E|EA|EB|EC|ED|SUB|TOP|LEV|ANS|END)\]\s*(.*)$/i);
+                    if (match) {
+                        flush();
+                        let tag = (match[1] || '').toUpperCase();
+                        if (tag === '01') tag = 'O1';
+                        if (tag === '02') tag = 'O2';
+                        if (tag === '03') tag = 'O3';
+                        if (tag === '04') tag = 'O4';
+                        if (tag === 'END') break;
+                        currentTag = tag;
+                        currentContent = [match[2]];
+                    } else {
+                        currentContent.push(line);
+                    }
+                }
+                flush();
+                stem = stem.trim();
+                if (!stem) continue;
+                const options = [
+                    { letter: 'A', text: o1.trim(), explanation: (ea || generalE).trim() || null },
+                    { letter: 'B', text: o2.trim(), explanation: (eb || generalE).trim() || null },
+                    { letter: 'C', text: o3.trim(), explanation: (ec || generalE).trim() || null },
+                    { letter: 'D', text: o4.trim(), explanation: (ed || generalE).trim() || null }
+                ];
+                const letters = ['A', 'B', 'C', 'D'];
+                const correctIndex = Math.max(0, letters.indexOf(correctLetter));
+                questions.push({
+                    stem,
+                    options,
+                    correctIndex,
+                    subject: subject.trim() || null,
+                    topics,
+                    difficulty
+                });
+            }
+            return questions;
+        }
+
+        function getBulkEditorText() {
+            const editor = window.bulkEditor;
+            if (!editor) return '';
+            const parts = [];
+            function textFromNode(node) {
+                let out = '';
+                node.descendants((n) => {
+                    if (n.isText) out += n.text;
+                    else if (n.type.name === 'hardBreak') out += '\n';
+                });
+                return out;
+            }
+            function collectBlocks(node) {
+                if (node.type.name === 'paragraph') {
+                    parts.push(textFromNode(node));
+                    return;
+                }
+                if (node.type.name === 'orderedList') {
+                    let index = 1;
+                    node.forEach((item) => {
+                        if (item.type.name === 'listItem') {
+                            parts.push(index + '. ' + textFromNode(item).replace(/^\s+|\s+$/g, ''));
+                            index += 1;
+                        }
+                    });
+                    return;
+                }
+                if (node.type.name === 'bulletList') {
+                    node.forEach((item) => {
+                        if (item.type.name === 'listItem') {
+                            parts.push('- ' + textFromNode(item).replace(/^\s+|\s+$/g, ''));
+                        }
+                    });
+                    return;
+                }
+                node.forEach(collectBlocks);
+            }
+            editor.state.doc.forEach(collectBlocks);
+            return parts.join('\n');
+        }
+
+        function showBulkImportMessage(msg, isError) {
+            const el = document.getElementById('bulk-import-message');
+            if (!el) return;
+            el.textContent = msg;
+            el.className = 'px-3 py-2 text-xs ' + (isError ? 'text-red-400' : 'text-primary');
+            el.classList.remove('hidden');
+        }
+
+        async function saveBulkQuestions() {
+            const raw = getBulkEditorText();
+            const questions = parseBulkRawText(raw);
+            if (!questions.length) { showBulkImportMessage('No valid questions found. Use [Q] ... [END] format.', true); return; }
+            if (!window.supabase) { showBulkImportMessage('Supabase not configured. Add js/config.js.', true); return; }
+            const btn = document.getElementById('bulk-import-btn');
+            if (btn) btn.disabled = true;
+            let ok = 0, fail = 0;
+            const failures = [];
+            try {
+                showBulkImportMessage('Importing ' + questions.length + ' question(s)...');
+
+                // Read current max index and continue numbering from there (1-based)
+                let nextIndexBase = 1;
+                const { data: maxRow, error: maxErr } = await window.supabase
+                    .from('questions')
+                    .select('index')
+                    .order('index', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                if (!maxErr && maxRow && maxRow.index != null) {
+                    nextIndexBase = maxRow.index + 1;
+                } else if (maxErr) {
+                    console.error('[Bulk import] FAILED: select max index', maxErr);
+                    failures.push({ step: 'read-max-index', message: maxErr.message || String(maxErr) });
+                }
+
+                for (let i = 0; i < questions.length; i++) {
+                    const q = questions[i];
+                    const qIndex = nextIndexBase + i;
+
+                    const { data: row, error: qErr } = await window.supabase.from('questions').insert({
+                        stem: q.stem,
+                        difficulty: q.difficulty,
+                        subject: q.subject,
+                        topics: q.topics && q.topics.length ? q.topics : null,
+                        index: qIndex
+                    }).select('id').single();
+
+                    if (qErr) {
+                        console.error('[Bulk import] FAILED: questions insert', qErr);
+                        fail++;
+                        failures.push({
+                            step: 'insert-question',
+                            question: (q.stem || '').slice(0, 120),
+                            message: qErr.message || JSON.stringify(qErr)
+                        });
+                        continue;
+                    }
+
+                    const opts = q.options.map((o, idx) => ({
+                        question_id: row.id,
+                        option_letter: o.letter,
+                        option_text: o.text || '(No text)',
+                        explanation: o.explanation || null,
+                        is_correct: idx === q.correctIndex
+                    }));
+                    const { error: oErr } = await window.supabase.from('options').insert(opts);
+                    if (oErr) {
+                        console.error('[Bulk import] FAILED: options insert', oErr);
+                        fail++;
+                        failures.push({
+                            step: 'insert-options',
+                            question: (q.stem || '').slice(0, 120),
+                            message: oErr.message || JSON.stringify(oErr)
+                        });
+                    } else {
+                        ok++;
+                    }
+                }
+            } catch (e) {
+                console.error('Bulk import crashed', e);
+                failures.push({ step: 'exception', message: (e && (e.message || String(e))) || 'Unknown error' });
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+
+            if (failures.length) {
+                const first = failures[0];
+                const detail = (first.step ? first.step + ': ' : '') + (first.message || 'Unknown error');
+                const summary = ok + ' imported, ' + fail + ' failed. First error: ' + detail;
+                showBulkImportMessage(summary, fail > 0);
+                console.error('[Bulk import] First failure step:', first.step, '| message:', first.message);
+            } else {
+                showBulkImportMessage(ok + ' imported, ' + fail + ' failed.', fail > 0);
+            }
+
+            if (ok > 0 && window.bulkEditor) {
+                window.bulkEditor.commands.setContent('');
+            }
+        }
+
+        function insertTag(tag) {
+            const editor = window.bulkEditor;
+            if (!editor) return;
+            const { from } = editor.state.selection;
+            const $pos = editor.state.doc.resolve(from);
+            const atLineStart = $pos.parentOffset === 0;
+            const textToInsert = (atLineStart ? '' : '\n') + tag + ' ';
+            editor.chain().focus().insertContentAt(from, textToInsert).run();
+        }
+
+        function insertMarkdown(wrapBefore, wrapAfter, placeholder) {
+            const editor = window.bulkEditor;
+            if (!editor) return;
+            const { from, to } = editor.state.selection;
+            const selected = editor.state.doc.textBetween(from, to, '');
+            const text = selected || (placeholder || '');
+            const insert = wrapBefore + text + wrapAfter;
+            const chain = editor.chain().focus();
+            if (to > from) chain.deleteRange({ from, to });
+            chain.insertContentAt(from, insert).run();
+        }
+
+        function insertMarkdownLinePrefix(prefix) {
+            const editor = window.bulkEditor;
+            if (!editor) return;
+            const { from } = editor.state.selection;
+            const $pos = editor.state.doc.resolve(from);
+            const lineStart = from - $pos.parentOffset;
+            editor.chain().focus().insertContentAt(lineStart, prefix).run();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function pasteAsPlainText() {
+            const editor = window.bulkEditor;
+            if (!editor) return;
+            try {
+                const plain = navigator.clipboard && await navigator.clipboard.readText();
+                if (!plain || !plain.trim()) return;
+                const lines = plain.split(/\r?\n/);
+                const html = lines.map((line) => '<p>' + escapeHtml(line) + '</p>').join('');
+                editor.chain().focus().deleteSelection().insertContent(html).run();
+            } catch (e) {
+                console.warn('Paste as plain text failed:', e);
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            const icon = document.getElementById('dark-mode-icon');
+            if (icon) {
+                icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            const icon = document.getElementById('dark-mode-icon');
+            if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+            const bulkImportBtn = document.getElementById('bulk-import-btn');
+            if (bulkImportBtn) bulkImportBtn.addEventListener('click', saveBulkQuestions);
+            const bulkSubmitBtn = document.getElementById('bulk-submit-btn');
+            if (bulkSubmitBtn) bulkSubmitBtn.addEventListener('click', saveBulkQuestions);
+
+            const bulkEditorHost = document.getElementById('raw-input-editor');
+            if (bulkEditorHost) {
+                bulkEditorHost.addEventListener('keydown', (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                        e.preventDefault();
+                        saveBulkQuestions();
+                    }
+                });
+            }
+
+            const loadFileBtn = document.getElementById('bulk-load-file-btn');
+            if (loadFileBtn) loadFileBtn.addEventListener('click', loadBulkImportFile);
+        });
+
+        async function loadBulkImportFile() {
+            const editor = window.bulkEditor;
+            if (!editor) return;
+            try {
+                const res = await fetch('question-bank-import.txt');
+                if (!res.ok) throw new Error('File not found');
+                const text = await res.text();
+                const lines = text.split(/\r?\n/);
+                const html = lines.map((line) => '<p>' + escapeHtml(line) + '</p>').join('');
+                editor.commands.setContent(html);
+                const msg = document.getElementById('bulk-import-message');
+                if (msg) { msg.textContent = 'Loaded question-bank-import.txt'; msg.className = 'px-3 py-2 text-xs text-primary'; msg.classList.remove('hidden'); }
+            } catch (e) {
+                const msg = document.getElementById('bulk-import-message');
+                if (msg) { msg.textContent = 'Could not load file: ' + (e.message || 'Unknown error'); msg.className = 'px-3 py-2 text-xs text-red-400'; msg.classList.remove('hidden'); }
+            }
+        }
+    </script>
+</body>
+
+</html>

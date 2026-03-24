@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f766e",
+                        "primary-strong": "#0b4f4a",
+                        "background-light": "#f3f4f6",
+                        "background-dark": "#020617",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <script>
+        // Init dark mode immediately to avoid FOUC
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <title>ExamPrep - Question Bank</title>
+    <script src="js/config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/paste-list-fix.js"></script>
+    <style>
+        .rendered-markdown .fmt-list {
+            margin: 0.5rem 0 0.5rem 1.25rem;
+        }
+
+        .rendered-markdown .fmt-list-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+            align-items: baseline;
+        }
+
+        .rendered-markdown .fmt-list-num {
+            flex-shrink: 0;
+            min-width: 1.25rem;
+            text-align: right;
+        }
+
+        .rendered-markdown .fmt-bullet {
+            flex-shrink: 0;
+            min-width: 0.75rem;
+        }
+
+        .rendered-markdown .fmt-p {
+            margin-bottom: 0.5rem;
+        }
+
+        .rendered-markdown .fmt-p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Prevent explanation and option text from overflowing the card */
+        .option-wrapper {
+            min-width: 0;
+        }
+        .option-wrapper .option-text {
+            min-width: 0;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+        .explanation-container {
+            min-width: 0;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+        .rendered-markdown .fmt-p,
+        .rendered-markdown .fmt-list-item > span:last-child {
+            overflow-wrap: break-word;
+            word-break: break-word;
+            min-width: 0;
+        }
+        .katex { color: inherit; }
+        .math-display { overflow-x: auto; }
+    </style>
+    <script>
+        function formatInlineMarkdown(str) {
+            if (!str) return '';
+            return str
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        }
+
+        function extractLatex(text) {
+            var parts = [];
+            var counter = 0;
+            var PH = '\uFFFDLX';
+            var processed = text;
+            processed = processed.replace(/\$\$([\s\S]+?)\$\$/g, function(m, latex) {
+                var ph = PH + (counter++) + '\uFFFD';
+                parts.push({ ph: ph, latex: latex, display: true, original: m });
+                return ph;
+            });
+            processed = processed.replace(/\$([^\$\n]+?)\$/g, function(m, latex) {
+                var ph = PH + (counter++) + '\uFFFD';
+                parts.push({ ph: ph, latex: latex, display: false, original: m });
+                return ph;
+            });
+            return { text: processed, parts: parts };
+        }
+
+        function restoreLatex(html, parts) {
+            for (var j = 0; j < parts.length; j++) {
+                var part = parts[j];
+                if (typeof katex !== 'undefined') {
+                    try {
+                        var rendered = katex.renderToString(part.latex, {
+                            displayMode: part.display,
+                            throwOnError: false
+                        });
+                        var dataAttr = part.original
+                            .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+                            .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        var cls = part.display ? 'math-display' : 'math-inline';
+                        html = html.split(part.ph).join(
+                            '<span class="' + cls + '" data-latex="' + dataAttr + '">' + rendered + '</span>'
+                        );
+                        continue;
+                    } catch(e) { /* fall through to raw */ }
+                }
+                html = html.split(part.ph).join(
+                    part.original.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                );
+            }
+            return html;
+        }
+
+        function renderTextWithLatex(text) {
+            if (!text) return '';
+            var extracted = extractLatex(text);
+            var html = extracted.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return restoreLatex(html, extracted.parts);
+        }
+
+        function renderFormattedText(text) {
+            if (!text) return '';
+            var extracted = extractLatex(text);
+            var escaped = extracted.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            var lines = escaped.split(/\n/);
+            var html = '';
+            var inList = false;
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var olMatch = line.match(/^\s*(\d+)\.\s+(.*)/);
+                var ulMatch = line.match(/^\s*[-*]\s+(.*)/);
+
+                if (olMatch) {
+                    if (!inList) { html += '<div class="fmt-list">'; inList = true; }
+                    html += '<div class="fmt-list-item"><span class="fmt-list-num">' + olMatch[1] + '.</span><span>' + formatInlineMarkdown(olMatch[2]) + '</span></div>';
+                } else if (ulMatch) {
+                    if (!inList) { html += '<div class="fmt-list">'; inList = true; }
+                    html += '<div class="fmt-list-item"><span class="fmt-bullet">&bull;</span><span>' + formatInlineMarkdown(ulMatch[1]) + '</span></div>';
+                } else {
+                    if (inList) { html += '</div>'; inList = false; }
+                    var trimmed = line.trim();
+                    if (trimmed !== '') {
+                        html += '<div class="fmt-p">' + formatInlineMarkdown(trimmed) + '</div>';
+                    }
+                }
+            }
+            if (inList) html += '</div>';
+            return restoreLatex(html, extracted.parts);
+        }
+    </script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+    <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col pt-16">
+            <!-- Navigation Header -->
+            <header
+                class="fixed inset-x-0 top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-primary/10 bg-white dark:bg-background-dark px-6 md:px-10 py-3">
+                <div class="flex items-center gap-8">
+                    <div class="flex items-center gap-4 text-primary">
+                        <div class="size-6">
+                            <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z"
+                                    fill="currentColor"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <nav class="hidden md:flex items-center gap-9">
+                        <a class="text-primary text-sm font-bold leading-normal border-b-2 border-primary"
+                            href="index.html">Question Bank</a>
+                        <a class="text-slate-600 dark:text-slate-400 hover:text-primary transition-colors text-sm font-medium leading-normal"
+                            href="add-question.html">Add Question</a>
+                    </nav>
+                </div>
+                <div class="flex flex-1 justify-end gap-4">
+                    <label class="hidden sm:flex flex-col min-w-40 h-10 max-w-64">
+                        <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+                            <div class="text-slate-400 flex border-none bg-primary/5 items-center justify-center pl-4 rounded-l-lg"
+                                data-icon="Search">
+                                <span class="material-symbols-outlined text-xl">search</span>
+                            </div>
+                            <input id="search-questions"
+                                class="form-input flex w-full min-w-0 flex-1 border-none bg-primary/5 focus:ring-0 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 px-4 rounded-r-lg text-base font-normal leading-normal"
+                                placeholder="Search questions..." value="" />
+                        </div>
+                    </label>
+                    <button onclick="toggleDarkMode()"
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors hover:bg-primary/20">
+                        <span id="dark-mode-icon" class="material-symbols-outlined">light_mode</span>
+                    </button>
+                </div>
+            </header>
+            <main class="flex flex-1 justify-center py-8">
+                <div class="layout-content-container flex flex-col max-w-[960px] flex-1 px-4 md:px-10">
+                    <!-- Title Section -->
+                    <div class="mb-6">
+                        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Student Question Bank</h1>
+                    </div>
+                    <!-- Filter Bar -->
+                    <div
+                        class="flex flex-wrap gap-3 mb-8 p-4 bg-white dark:bg-background-dark/50 rounded-xl border border-primary/10">
+                        <select id="filter-level"
+                            class="h-10 rounded-lg bg-primary/10 hover:bg-primary/20 px-4 text-primary text-sm font-semibold border-0 cursor-pointer focus:ring-2 focus:ring-primary">
+                            <option value="">Level: All</option>
+                            <option value="easy">Basic</option>
+                            <option value="medium">Intermediate</option>
+                            <option value="hard">Advanced</option>
+                        </select>
+                        <select id="filter-subject"
+                            class="h-10 rounded-lg bg-primary/5 border border-primary/20 px-4 text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary w-40 cursor-pointer">
+                            <option value="">Subject: All</option>
+                        </select>
+                        <select id="filter-topic"
+                            class="h-10 rounded-lg bg-primary/5 border border-primary/20 px-4 text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary w-40 cursor-pointer"
+                            disabled>
+                            <option value="">Topic: All</option>
+                        </select>
+                        <select id="filter-explanation"
+                            class="h-10 rounded-lg bg-primary/5 border border-primary/20 px-4 text-sm font-medium text-slate-700 dark:text-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-primary w-52 cursor-pointer">
+                            <option value="">Explanation: All</option>
+                            <option value="empty">Explanation: Empty</option>
+                            <option value="non-empty">Explanation: Not empty</option>
+                        </select>
+                        <div class="flex-grow"></div>
+                        <button type="button" id="delete-all-questions-btn" aria-label="Delete all questions"
+                            class="group relative h-10 w-10 inline-flex items-center justify-center rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">
+                            <span class="material-symbols-outlined text-[20px] leading-none">delete</span>
+                            <span
+                                class="pointer-events-none absolute right-0 top-full mt-2 translate-y-1 opacity-0 whitespace-nowrap rounded-md border border-red-200 dark:border-red-900 bg-white dark:bg-slate-900 px-2 py-1 text-xs font-medium text-red-600 dark:text-red-300 shadow-sm transition-all group-hover:translate-y-0 group-hover:opacity-100">
+                                Delete all questions
+                            </span>
+                        </button>
+                    </div>
+                    <!-- Question Feed -->
+                    <div class="flex flex-col gap-6">
+                        <!-- Pagination -->
+                        <div id="pagination-container" class="sticky top-16 z-30 flex justify-center items-center gap-2 py-3 mb-4 flex-wrap bg-background-light/95 dark:bg-background-dark/95 backdrop-blur border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm"></div>
+                        <div id="question-feed" class="flex flex-col gap-6"></div>
+                        <div id="question-feed-loading" class="text-center py-12 text-slate-500 dark:text-slate-400 hidden">Loading questions...</div>
+                        <div id="question-feed-empty" class="text-center py-12 text-slate-500 dark:text-slate-400 hidden">No questions found. Add some from the Add Question page.</div>
+                        <!-- Template (hidden, cloned by JS) -->
+                        <template id="question-card-template">
+                            <div class="question-card flex flex-col items-stretch justify-start rounded-xl shadow-sm bg-white dark:bg-background-dark border border-slate-100 dark:border-slate-800 overflow-hidden">
+                                <div class="p-6">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div class="flex flex-col gap-1">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="question-serial-badge px-2 py-0.5 rounded text-xs font-semibold tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">1.</span>
+                                                <span class="question-difficulty-badge px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">Medium</span>
+                                                <span class="question-subject-tag px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary border border-primary/20 hidden"></span>
+                                                <div class="question-topic-tags flex flex-wrap gap-1"></div>
+                                            </div>
+                                            <div class="question-stem text-slate-900 dark:text-slate-100 text-lg font-semibold leading-relaxed mt-2"></div>
+                                        </div>
+                                        <div class="flex gap-1">
+                                            <button class="p-2 text-slate-400 hover:text-primary transition-colors" title="Bookmark"><span class="material-symbols-outlined">bookmark</span></button>
+                                            <button class="edit-btn p-2 text-slate-400 hover:text-blue-500 transition-colors" title="Edit Question"><span class="material-symbols-outlined">edit</span></button>
+                                            <button class="delete-btn p-2 text-slate-400 hover:text-red-500 transition-colors" title="Delete Question"><span class="material-symbols-outlined">delete</span></button>
+                                        </div>
+                                    </div>
+                                    <div class="question-options grid grid-cols-1 gap-3 mb-6"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+            </main>
+        </div>
+    </div>
+</body>
+
+<script>
+    const PAGE_SIZE = 10;
+    let questionBankState = { page: 0, totalCount: 0, searchDebounce: null };
+
+        const DIFFICULTY_LABELS = { easy: 'Basic', medium: 'Intermediate', hard: 'Advanced' };
+    const DIFFICULTY_CLASSES = {
+        easy: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+        medium: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+        hard: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+    };
+
+        let SUBJECTS_DATA = [];
+        let TOPICS_DATA = [];
+
+        async function initSubjectAndTopicFilters() {
+            const subjectSelect = document.getElementById('filter-subject');
+            const topicSelect = document.getElementById('filter-topic');
+            if (!subjectSelect || !topicSelect) return;
+
+            try {
+                const [subjectsResp, topicsResp] = await Promise.all([
+                    fetch('assets/subjects.json'),
+                    fetch('assets/topics.json')
+                ]);
+                if (!subjectsResp.ok || !topicsResp.ok) throw new Error('Failed to load subject/topic data');
+                SUBJECTS_DATA = await subjectsResp.json();
+                TOPICS_DATA = await topicsResp.json();
+
+                // Populate subjects dropdown
+                subjectSelect.innerHTML = '';
+                const defaultSub = document.createElement('option');
+                defaultSub.value = '';
+                defaultSub.textContent = 'Subject: All';
+                subjectSelect.appendChild(defaultSub);
+                SUBJECTS_DATA.forEach(sub => {
+                    const opt = document.createElement('option');
+                    opt.value = String(sub.id);
+                    opt.textContent = sub.name;
+                    opt.setAttribute('data-name', sub.name);
+                    subjectSelect.appendChild(opt);
+                });
+
+                // Reset topic dropdown
+                resetTopicDropdown();
+
+                subjectSelect.addEventListener('change', () => {
+                    updateTopicDropdownForSubject();
+                    questionBankState.page = 0;
+                    loadQuestions();
+                });
+
+                topicSelect.addEventListener('change', () => {
+                    questionBankState.page = 0;
+                    loadQuestions();
+                });
+            } catch (e) {
+                console.error('Error initializing subject/topic filters', e);
+            }
+        }
+
+        function resetTopicDropdown() {
+            const topicSelect = document.getElementById('filter-topic');
+            if (!topicSelect) return;
+            topicSelect.innerHTML = '';
+            const defaultTopic = document.createElement('option');
+            defaultTopic.value = '';
+            defaultTopic.textContent = 'Topic: All';
+            topicSelect.appendChild(defaultTopic);
+            topicSelect.disabled = true;
+        }
+
+        function updateTopicDropdownForSubject() {
+            const subjectSelect = document.getElementById('filter-subject');
+            const topicSelect = document.getElementById('filter-topic');
+            if (!subjectSelect || !topicSelect) return;
+
+            const subjectId = parseInt(subjectSelect.value || '0', 10);
+            topicSelect.innerHTML = '';
+            const defaultTopic = document.createElement('option');
+            defaultTopic.value = '';
+            defaultTopic.textContent = 'Topic: All';
+            topicSelect.appendChild(defaultTopic);
+
+            if (!subjectId || !Array.isArray(TOPICS_DATA) || TOPICS_DATA.length === 0) {
+                topicSelect.disabled = true;
+                return;
+            }
+
+            TOPICS_DATA.filter(t => t.subject_tag_id === subjectId).forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.name;
+                opt.textContent = t.name;
+                topicSelect.appendChild(opt);
+            });
+            topicSelect.disabled = false;
+        }
+
+    async function loadQuestions() {
+        const feed = document.getElementById('question-feed');
+        const loading = document.getElementById('question-feed-loading');
+        const empty = document.getElementById('question-feed-empty');
+        feed.innerHTML = '';
+        loading.classList.remove('hidden');
+        empty.classList.add('hidden');
+
+        if (!window.supabase) {
+            loading.classList.add('hidden');
+            empty.classList.remove('hidden');
+            empty.textContent = 'Supabase not configured. Add your URL and anon key in js/config.js';
+            return;
+        }
+
+        const level = document.getElementById('filter-level').value.trim();
+        let subject = '';
+        const subjectEl = document.getElementById('filter-subject');
+        if (subjectEl) {
+            const selected = subjectEl.options[subjectEl.selectedIndex];
+            subject = selected ? (selected.getAttribute('data-name') || '').trim() : '';
+        }
+        const topic = document.getElementById('filter-topic').value.trim();
+        const explanationFilter = document.getElementById('filter-explanation').value.trim();
+        const search = (document.getElementById('search-questions') && document.getElementById('search-questions').value) ? document.getElementById('search-questions').value.trim() : '';
+        const from = questionBankState.page * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        let questions = [];
+        let qErr = null;
+        let count = 0;
+        const applyQuestionBaseFilters = (query) => {
+            if (level) query = query.eq('difficulty', level);
+            if (subject) query = query.eq('subject', subject);
+            if (topic) query = query.contains('topics', [topic]);
+            if (search) query = query.ilike('stem', '%' + search + '%');
+            return query;
+        };
+
+        if (!explanationFilter) {
+            let query = window.supabase.from('questions').select('*', { count: 'exact' }).order('index', { ascending: true, nullsFirst: false });
+            query = applyQuestionBaseFilters(query);
+            const result = await query.range(from, to);
+            questions = result.data || [];
+            qErr = result.error || null;
+            count = result.count || 0;
+        } else {
+            // Explanation-filter mode uses option-level explanation presence per question.
+            let allQQuery = window.supabase
+                .from('questions')
+                .select('id, index, stem, difficulty, subject, topics')
+                .order('index', { ascending: true, nullsFirst: false });
+            allQQuery = applyQuestionBaseFilters(allQQuery);
+            const { data: allMatchingQuestions, error: allQErr } = await allQQuery;
+            if (allQErr) {
+                qErr = allQErr;
+            } else {
+                const allQuestions = allMatchingQuestions || [];
+                if (allQuestions.length === 0) {
+                    questions = [];
+                    count = 0;
+                } else {
+                    const allIds = allQuestions.map(q => q.id);
+                    const { data: optionsForAll, error: optionsFilterErr } = await window.supabase
+                        .from('options')
+                        .select('question_id, explanation')
+                        .in('question_id', allIds);
+                    if (optionsFilterErr) {
+                        qErr = optionsFilterErr;
+                    } else {
+                        const hasNonEmptyExplanation = {};
+                        (optionsForAll || []).forEach(opt => {
+                            const exp = (opt.explanation || '').trim();
+                            if (exp) hasNonEmptyExplanation[opt.question_id] = true;
+                        });
+                        const filteredQuestions = allQuestions.filter(q => {
+                            const hasAny = hasNonEmptyExplanation[q.id] === true;
+                            return explanationFilter === 'non-empty' ? hasAny : !hasAny;
+                        });
+                        count = filteredQuestions.length;
+                        const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
+                        if (questionBankState.page > totalPages - 1) questionBankState.page = totalPages - 1;
+                        const start = questionBankState.page * PAGE_SIZE;
+                        questions = filteredQuestions.slice(start, start + PAGE_SIZE);
+                    }
+                }
+            }
+        }
+
+        loading.classList.add('hidden');
+        if (qErr) {
+            empty.classList.remove('hidden');
+            empty.textContent = 'Error loading questions: ' + (qErr.message || 'Unknown error');
+            return;
+        }
+        questionBankState.totalCount = count || 0;
+        if (!questions || questions.length === 0) {
+            empty.classList.remove('hidden');
+            renderPagination();
+            return;
+        }
+
+        const ids = questions.map(q => q.id);
+        const { data: options, error: oErr } = await window.supabase.from('options').select('*').in('question_id', ids).order('option_letter');
+        if (oErr) {
+            empty.classList.remove('hidden');
+            empty.textContent = 'Error loading options: ' + (oErr.message || 'Unknown error');
+            return;
+        }
+        const optionsByQuestion = {};
+        (options || []).forEach(opt => {
+            if (!optionsByQuestion[opt.question_id]) optionsByQuestion[opt.question_id] = [];
+            optionsByQuestion[opt.question_id].push(opt);
+        });
+
+        questions.forEach(q => {
+            const card = renderQuestionCard(q, optionsByQuestion[q.id] || []);
+            feed.appendChild(card);
+        });
+        renderPagination();
+    }
+
+    function renderQuestionCard(question, opts) {
+        const t = document.getElementById('question-card-template');
+        const clone = t.content.cloneNode(true);
+        const card = clone.querySelector('.question-card');
+        const serialEl = card.querySelector('.question-serial-badge');
+        if (serialEl && typeof question.index === 'number') {
+            const n = (question.index || 0);
+            serialEl.textContent = n.toString() + '.';
+        }
+        card.querySelector('.question-difficulty-badge').textContent = DIFFICULTY_LABELS[question.difficulty] || question.difficulty;
+        card.querySelector('.question-difficulty-badge').className = 'question-difficulty-badge px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ' + (DIFFICULTY_CLASSES[question.difficulty] || DIFFICULTY_CLASSES.medium);
+        const subjectTag = card.querySelector('.question-subject-tag');
+        if (subjectTag) {
+            const sub = (question.subject || '').trim();
+            if (sub) {
+                subjectTag.textContent = sub;
+                subjectTag.classList.remove('hidden');
+            }
+        }
+        const topicTagsEl = card.querySelector('.question-topic-tags');
+        if (topicTagsEl) {
+            const topics = Array.isArray(question.topics) ? question.topics : [];
+            topics.forEach(t => {
+                const tStr = (t || '').toString().trim();
+                if (!tStr) return;
+                const span = document.createElement('span');
+                span.className = 'px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600';
+                span.textContent = tStr;
+                topicTagsEl.appendChild(span);
+            });
+        }
+        const stemEl = card.querySelector('.question-stem');
+        stemEl.classList.add('rendered-markdown');
+        stemEl.innerHTML = renderFormattedText(question.stem || '');
+
+        const optionsGrid = card.querySelector('.question-options');
+        const letters = ['A', 'B', 'C', 'D'];
+        const optMap = {};
+        (opts || []).forEach(o => { optMap[o.option_letter] = o; });
+
+        letters.forEach(letter => {
+            const o = optMap[letter] || {};
+            const isCorrect = o.is_correct === true;
+
+            const div = document.createElement('div');
+            div.className = 'option-wrapper flex gap-3 p-3 rounded-lg border text-left transition-all group w-full ' + (isCorrect ? 'border-primary bg-primary/5' : 'border-slate-200 dark:border-slate-700');
+            div.innerHTML =
+                '<div class="option-letter flex items-center justify-center shrink-0 size-8 rounded-full font-bold text-sm ' + (isCorrect ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400') + '">' + letter + '</div>' +
+                '<div class="option-content flex flex-col gap-2 min-w-0 flex-1">' +
+                '<span class="option-text ' + (isCorrect ? 'text-slate-900 dark:text-slate-100 font-medium' : 'text-slate-700 dark:text-slate-300') + '">' + renderTextWithLatex(o.option_text || '') + '</span>' +
+                '<div class="explanation-container text-sm text-slate-600 dark:text-slate-400" data-opt="' + letter + '"></div>' +
+                '</div>';
+            const expEl = div.querySelector('.explanation-container');
+            expEl.classList.add('rendered-markdown');
+            if (o.explanation) {
+                expEl.innerHTML = renderFormattedText(o.explanation);
+            } else if (o.id) {
+                const inputWrapper = document.createElement('div');
+                inputWrapper.className = 'mt-2';
+                inputWrapper.innerHTML =
+                    '<textarea class="option-exp-input w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-background-dark text-sm px-3 py-2 mb-2 focus:ring-2 focus:ring-primary min-h-[4.5rem] resize-none overflow-hidden" rows="3" placeholder="Type explanation for this option..." data-option-id="' + (o.id || '') + '"></textarea>';
+                expEl.parentElement.appendChild(inputWrapper);
+                const ta = inputWrapper.querySelector('textarea');
+                function resizeExpTextarea() {
+                    ta.style.height = 'auto';
+                    ta.style.height = Math.max(ta.scrollHeight, 72) + 'px';
+                }
+                ta.addEventListener('input', resizeExpTextarea);
+                ta.addEventListener('paste', () => setTimeout(resizeExpTextarea, 0));
+                resizeExpTextarea();
+            }
+            optionsGrid.appendChild(div);
+        });
+
+        const saveAllWrapper = document.createElement('div');
+        saveAllWrapper.className = 'save-all-explanations-wrapper mt-4 flex items-center justify-end gap-3';
+        if (card.querySelectorAll('.option-exp-input').length === 0) saveAllWrapper.classList.add('hidden');
+        saveAllWrapper.innerHTML =
+            '<span class="save-all-status text-xs text-slate-500 dark:text-slate-400"></span>' +
+            '<button type="button" class="save-all-explanations-btn inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-50">' +
+            '<span class="material-symbols-outlined text-lg">save</span>' +
+            'Save all explanations' +
+            '</button>';
+        const saveAllBtn = saveAllWrapper.querySelector('.save-all-explanations-btn');
+        const saveAllStatus = saveAllWrapper.querySelector('.save-all-status');
+        saveAllBtn.addEventListener('click', async () => {
+            function parseTaggedExplanations(text) {
+                const result = {};
+                if (!text) return result;
+                const regex = /\[O([1-4])\]\s*([\s\S]*?)(?=\[O[1-4]\]|\s*$)/g;
+                let m;
+                while ((m = regex.exec(text)) !== null) {
+                    const idx = parseInt(m[1], 10);
+                    const body = (m[2] || '').trim();
+                    if (idx >= 1 && idx <= 4 && body) {
+                        result[idx] = body;
+                    }
+                }
+                return result;
+            }
+            const inputs = card.querySelectorAll('.option-exp-input');
+            // If any textarea contains [O1]...[O4] tags, split and distribute them
+            let taggedMap = null;
+            inputs.forEach(ta => {
+                if (taggedMap) return;
+                const raw = (ta.value || '');
+                if (/\[O[1-4]\]/.test(raw)) {
+                    taggedMap = parseTaggedExplanations(raw);
+                }
+            });
+            if (taggedMap && Object.keys(taggedMap).length > 0) {
+                const letters = ['A', 'B', 'C', 'D'];
+                inputs.forEach(ta => {
+                    const wrap = ta.closest('.option-wrapper');
+                    const expCont = wrap ? wrap.querySelector('.explanation-container') : null;
+                    const letter = expCont ? (expCont.getAttribute('data-opt') || '').toUpperCase() : '';
+                    const idx = letters.indexOf(letter) + 1;
+                    if (idx >= 1 && taggedMap[idx]) {
+                        ta.value = taggedMap[idx];
+                        ta.style.height = 'auto';
+                        ta.style.height = Math.max(ta.scrollHeight, 72) + 'px';
+                    }
+                });
+            }
+            const toSave = [];
+            inputs.forEach(ta => {
+                const raw = (ta.value || '').trim();
+                if (raw) toSave.push({ id: ta.getAttribute('data-option-id'), text: raw, textarea: ta });
+            });
+            if (toSave.length === 0) {
+                saveAllStatus.textContent = 'Enter at least one explanation to save.';
+                saveAllStatus.className = 'save-all-status text-xs text-red-500 dark:text-red-400';
+                return;
+            }
+            if (!window.supabase) {
+                saveAllStatus.textContent = 'Supabase not configured.';
+                saveAllStatus.className = 'save-all-status text-xs text-red-500 dark:text-red-400';
+                return;
+            }
+            saveAllBtn.disabled = true;
+            saveAllStatus.textContent = 'Saving...';
+            saveAllStatus.className = 'save-all-status text-xs text-slate-500 dark:text-slate-400';
+            let failed = 0;
+            await Promise.all(toSave.map(async ({ id, text, textarea }) => {
+                const { error } = await window.supabase.from('options').update({ explanation: text }).eq('id', id);
+                if (error) {
+                    failed++;
+                    return;
+                }
+                const optionLetter = (textarea.closest('.option-wrapper') && textarea.closest('.option-wrapper').querySelector('.explanation-container'))
+                    ? (textarea.closest('.option-wrapper').querySelector('.explanation-container').getAttribute('data-opt') || '')
+                    : '';
+                if (optionLetter && optMap[optionLetter]) optMap[optionLetter].explanation = text;
+                const expContainer = textarea.closest('.option-wrapper').querySelector('.explanation-container');
+                if (expContainer) {
+                    expContainer.innerHTML = renderFormattedText(text);
+                    const wrap = textarea.closest('.mt-2');
+                    if (wrap) wrap.remove();
+                }
+            }));
+            saveAllBtn.disabled = false;
+            if (failed > 0) {
+                saveAllStatus.textContent = failed + ' explanation(s) failed to save.';
+                saveAllStatus.className = 'save-all-status text-xs text-red-500 dark:text-red-400';
+            } else {
+                saveAllStatus.textContent = toSave.length === 1 ? '1 explanation saved.' : toSave.length + ' explanations saved.';
+                saveAllStatus.className = 'save-all-status text-xs text-green-600 dark:text-green-400';
+                if (card.querySelectorAll('.option-exp-input').length === 0) saveAllWrapper.classList.add('hidden');
+                setTimeout(() => { saveAllStatus.textContent = ''; }, 3000);
+            }
+        });
+        card.querySelector('.p-6').appendChild(saveAllWrapper);
+
+        const editBtn = card.querySelector('.edit-btn');
+        editBtn.addEventListener('click', () => {
+            window.location.href = 'add-question.html?edit=' + encodeURIComponent(question.id);
+        });
+
+        const deleteBtn = card.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to delete this question? This cannot be undone.')) return;
+            if (!window.supabase) return;
+
+            deleteBtn.disabled = true;
+            const { error: optErr } = await window.supabase.from('options').delete().eq('question_id', question.id);
+            if (optErr) { alert('Failed to delete options: ' + optErr.message); deleteBtn.disabled = false; return; }
+            const { error: qErr } = await window.supabase.from('questions').delete().eq('id', question.id);
+            if (qErr) { alert('Failed to delete question: ' + qErr.message); deleteBtn.disabled = false; return; }
+
+            card.style.transition = 'opacity 0.3s, transform 0.3s';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => { card.remove(); questionBankState.totalCount--; renderPagination(); }, 300);
+        });
+
+        return card;
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination-container');
+        container.innerHTML = '';
+        const totalPages = Math.max(1, Math.ceil(questionBankState.totalCount / PAGE_SIZE));
+        const page = questionBankState.page;
+
+        const prev = document.createElement('button');
+        prev.className = 'flex size-10 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:border-primary hover:text-primary transition-all';
+        prev.innerHTML = '<span class="material-symbols-outlined">chevron_left</span>';
+        prev.disabled = page === 0;
+        prev.addEventListener('click', () => { questionBankState.page = Math.max(0, page - 1); loadQuestions(); });
+        container.appendChild(prev);
+
+        for (let i = 0; i < totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'flex size-10 items-center justify-center rounded-lg border border-transparent text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-all';
+            if (i === page) btn.className = 'flex size-10 items-center justify-center rounded-lg bg-primary text-white font-bold';
+            btn.textContent = i + 1;
+            const p = i;
+            btn.addEventListener('click', () => { questionBankState.page = p; loadQuestions(); });
+            container.appendChild(btn);
+        }
+
+        const next = document.createElement('button');
+        next.className = 'flex size-10 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:border-primary hover:text-primary transition-all';
+        next.innerHTML = '<span class="material-symbols-outlined">chevron_right</span>';
+        next.disabled = page >= totalPages - 1;
+        next.addEventListener('click', () => { questionBankState.page = Math.min(totalPages - 1, page + 1); loadQuestions(); });
+        container.appendChild(next);
+    }
+
+    async function deleteAllQuestions() {
+        if (!window.supabase) {
+            alert('Supabase not configured.');
+            return;
+        }
+        if (!confirm('Permanently delete ALL questions and their options from the database? This cannot be undone.')) return;
+        const btn = document.getElementById('delete-all-questions-btn');
+        if (btn) btn.disabled = true;
+        const BATCH = 200;
+        let totalDeleted = 0;
+        try {
+            for (;;) {
+                const { data: batch } = await window.supabase.from('questions').select('id').limit(BATCH);
+                if (!batch || batch.length === 0) break;
+                const ids = batch.map(r => r.id);
+                const { error: optErr } = await window.supabase.from('options').delete().in('question_id', ids);
+                if (optErr) throw new Error('Options: ' + optErr.message);
+                const { error: qErr } = await window.supabase.from('questions').delete().in('id', ids);
+                if (qErr) throw new Error('Questions: ' + qErr.message);
+                totalDeleted += ids.length;
+            }
+            questionBankState.totalCount = 0;
+            questionBankState.page = 0;
+            loadQuestions();
+            alert('All ' + totalDeleted + ' question(s) have been deleted.');
+        } catch (e) {
+            alert('Failed to delete all: ' + (e.message || e));
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    function wireFiltersAndSearch() {
+        const refetch = () => { questionBankState.page = 0; loadQuestions(); };
+        const elLevel = document.getElementById('filter-level');
+        if (elLevel) elLevel.addEventListener('change', refetch);
+        const elExplanation = document.getElementById('filter-explanation');
+        if (elExplanation) elExplanation.addEventListener('change', refetch);
+        const searchEl = document.getElementById('search-questions');
+        if (searchEl) searchEl.addEventListener('input', () => { clearTimeout(questionBankState.searchDebounce); questionBankState.searchDebounce = setTimeout(refetch, 300); });
+        const deleteAllBtn = document.getElementById('delete-all-questions-btn');
+        if (deleteAllBtn) deleteAllBtn.addEventListener('click', deleteAllQuestions);
+    }
+
+    function toggleDarkMode() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        const icon = document.getElementById('dark-mode-icon');
+        if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const isDark = document.documentElement.classList.contains('dark');
+        const icon = document.getElementById('dark-mode-icon');
+        if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
+        initSubjectAndTopicFilters().finally(() => {
+            wireFiltersAndSearch();
+            loadQuestions();
+        });
+    });
+</script>
+
+</html>
