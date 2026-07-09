@@ -16,8 +16,7 @@
     </script>
     <script src="js/config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="js/supabase.js"></script>
-    <script src="js/paste-list-fix.js"></script>
+    <script type="module" src="js/pages/add-content/index.js"></script>
 </head>
 <body>
     <header class="app-header">
@@ -29,7 +28,7 @@
             </nav>
             <div class="app-header__spacer"></div>
             <div class="app-header__actions">
-                <button type="button" onclick="toggleDarkMode()" class="icon-btn" aria-label="Toggle theme">
+                <button type="button" id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
                     <span id="dark-mode-icon" class="material-symbols-outlined">light_mode</span>
                 </button>
             </div>
@@ -63,32 +62,32 @@
                 </div>
 
                 <div class="editor-toolbar">
-                    <button type="button" onclick="insertMarkdown('**','**','text')" title="Bold" class="tool-btn"><strong>B</strong></button>
-                    <button type="button" onclick="insertMarkdown('*','*','text')" title="Italic" class="tool-btn"><em>I</em></button>
-                    <button type="button" onclick="insertMarkdownLinePrefix('- ')" title="Bullet list" class="tool-btn">•</button>
-                    <button type="button" onclick="insertMarkdownLinePrefix('1. ')" title="Numbered list" class="tool-btn">1.</button>
-                    <button type="button" onclick="insertMarkdown('```\n','\n```','code')" title="Code block" class="tool-btn">&lt;/&gt;</button>
-                    <button type="button" onclick="insertMarkdown('<sup>','</sup>','2')" title="Superscript" class="tool-btn">x²</button>
-                    <button type="button" onclick="insertMarkdown('<sub>','</sub>','2')" title="Subscript" class="tool-btn">x₂</button>
-                    <button type="button" onclick="insertMarkdown('![](', ')', 'url')" title="Image" class="tool-btn">img</button>
-                    <button type="button" onclick="insertMarkdown('$','$','x^2')" title="Inline math" class="tool-btn">$x$</button>
-                    <button type="button" onclick="insertMarkdown('$$\n','\n$$','\\frac{a}{b}')" title="Display math" class="tool-btn">$$</button>
-                    <button type="button" onclick="pasteAsPlainText()" title="Paste as plain text" class="tool-btn">Paste plain</button>
+                    <button type="button" data-md-before="**" data-md-after="**" data-md-placeholder="text" title="Bold" class="tool-btn"><strong>B</strong></button>
+                    <button type="button" data-md-before="*" data-md-after="*" data-md-placeholder="text" title="Italic" class="tool-btn"><em>I</em></button>
+                    <button type="button" data-md-prefix="- " title="Bullet list" class="tool-btn">•</button>
+                    <button type="button" data-md-prefix="1. " title="Numbered list" class="tool-btn">1.</button>
+                    <button type="button" data-md-before="```&#10;" data-md-after="&#10;```" data-md-placeholder="code" title="Code block" class="tool-btn">&lt;/&gt;</button>
+                    <button type="button" data-md-before="&lt;sup&gt;" data-md-after="&lt;/sup&gt;" data-md-placeholder="2" title="Superscript" class="tool-btn">x²</button>
+                    <button type="button" data-md-before="&lt;sub&gt;" data-md-after="&lt;/sub&gt;" data-md-placeholder="2" title="Subscript" class="tool-btn">x₂</button>
+                    <button type="button" data-md-before="![](" data-md-after=")" data-md-placeholder="url" title="Image" class="tool-btn">img</button>
+                    <button type="button" data-md-before="$" data-md-after="$" data-md-placeholder="x^2" title="Inline math" class="tool-btn">$x$</button>
+                    <button type="button" data-md-before="$$&#10;" data-md-after="&#10;$$" data-md-placeholder="\frac{a}{b}" title="Display math" class="tool-btn">$$</button>
+                    <button type="button" data-action="paste-plain" title="Paste as plain text" class="tool-btn">Paste plain</button>
                 </div>
 
                 <div id="raw-input-editor"></div>
 
                 <div class="editor-panel__footer">
-                    <button type="button" onclick="insertTag('[Q]')" class="tool-btn tool-btn--tag">[Q]</button>
-                    <button type="button" onclick="insertTag('[F]')" class="tool-btn tool-btn--tag">[F]</button>
-                    <button type="button" onclick="insertTag('[B]')" class="tool-btn tool-btn--tag">[B]</button>
-                    <button type="button" onclick="insertTag('[O1]')" class="tool-btn tool-btn--tag">[O1]</button>
-                    <button type="button" onclick="insertTag('[E]')" class="tool-btn tool-btn--tag">[E]</button>
-                    <button type="button" onclick="insertTag('[SUB]')" class="tool-btn tool-btn--tag">[SUB]</button>
-                    <button type="button" onclick="insertTag('[TOP]')" class="tool-btn tool-btn--tag">[TOP]</button>
-                    <button type="button" onclick="insertTag('[LEV]')" class="tool-btn tool-btn--tag">[LEV]</button>
-                    <button type="button" onclick="insertTag('[ANS]')" class="tool-btn tool-btn--tag">[ANS]</button>
-                    <button type="button" onclick="insertTag('[END]')" class="tool-btn tool-btn--tag">[END]</button>
+                    <button type="button" data-tag="[Q]" class="tool-btn tool-btn--tag">[Q]</button>
+                    <button type="button" data-tag="[F]" class="tool-btn tool-btn--tag">[F]</button>
+                    <button type="button" data-tag="[B]" class="tool-btn tool-btn--tag">[B]</button>
+                    <button type="button" data-tag="[O1]" class="tool-btn tool-btn--tag">[O1]</button>
+                    <button type="button" data-tag="[E]" class="tool-btn tool-btn--tag">[E]</button>
+                    <button type="button" data-tag="[SUB]" class="tool-btn tool-btn--tag">[SUB]</button>
+                    <button type="button" data-tag="[TOP]" class="tool-btn tool-btn--tag">[TOP]</button>
+                    <button type="button" data-tag="[LEV]" class="tool-btn tool-btn--tag">[LEV]</button>
+                    <button type="button" data-tag="[ANS]" class="tool-btn tool-btn--tag">[ANS]</button>
+                    <button type="button" data-tag="[END]" class="tool-btn tool-btn--tag">[END]</button>
                     <span class="editor-toolbar__sep"></span>
                     <button id="bulk-import-btn" type="button" class="btn btn-primary">Import to database</button>
                     <button id="bulk-load-file-btn" type="button" title="Load question-bank-import.txt" class="btn btn-ghost">Load file</button>
@@ -97,395 +96,5 @@
             </div>
         </div>
     </main>
-
-    <script type="module">
-        import { Editor } from 'https://cdn.jsdelivr.net/npm/@tiptap/core@2.8.0/+esm';
-        import StarterKit from 'https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@2.8.0/+esm';
-        import Placeholder from 'https://cdn.jsdelivr.net/npm/@tiptap/extension-placeholder@2.8.0/+esm';
-
-        const el = document.getElementById('raw-input-editor');
-        if (el) {
-            window.bulkEditor = new Editor({
-                element: el,
-                extensions: [
-                    StarterKit.configure({ codeBlock: false }),
-                    Placeholder.configure({
-                        placeholder: '',
-                        emptyEditorClass: 'is-empty-before',
-                        emptyNodeClass: 'empty-node',
-                        showOnlyCurrent: false,
-                    }),
-                ],
-                content: '',
-                editorProps: {
-                    attributes: {
-                        class: 'tiptap',
-                    },
-                },
-            });
-        }
-    </script>
-    <script>
-        function parseBulkRawText(text) {
-            const questions = [];
-            const blocks = text.split(/\[Q\]/i);
-            const levMap = { basic: 'easy', intermediate: 'medium', advanced: 'hard' };
-            for (let i = 1; i < blocks.length; i++) {
-                const block = blocks[i].trim();
-                let stem = '', o1 = '', o2 = '', o3 = '', o4 = '';
-                let ea = '', eb = '', ec = '', ed = '', generalE = '';
-                let subject = '', topics = [], difficulty = 'medium';
-                let correctLetter = 'A';
-                const normalized = block.replace(/\[(O1|O2|O3|O4|01|02|03|04|E|EA|EB|EC|ED|SUB|TOP|LEV|ANS|END)\]/gi, '\n[$1]');
-                const lines = normalized.split(/\r?\n/);
-                let currentTag = 'Q';
-                let currentContent = [];
-                function flush() {
-                    const s = currentContent.join('\n').trim();
-                    if (currentTag === 'Q') stem = s;
-                    else if (currentTag === 'O1') o1 = s;
-                    else if (currentTag === 'O2') o2 = s;
-                    else if (currentTag === 'O3') o3 = s;
-                    else if (currentTag === 'O4') o4 = s;
-                    else if (currentTag === 'E') generalE = s;
-                    else if (currentTag === 'EA') ea = s;
-                    else if (currentTag === 'EB') eb = s;
-                    else if (currentTag === 'EC') ec = s;
-                    else if (currentTag === 'ED') ed = s;
-                    else if (currentTag === 'SUB') subject = s;
-                    else if (currentTag === 'TOP') topics.push(s);
-                    else if (currentTag === 'LEV') difficulty = levMap[s.toLowerCase()] || 'medium';
-                    else if (currentTag === 'ANS') {
-                        const c = (s || '').trim().charAt(0).toUpperCase();
-                        if (['A', 'B', 'C', 'D'].includes(c)) correctLetter = c;
-                    }
-                    currentContent = [];
-                }
-                for (let j = 0; j < lines.length; j++) {
-                    const line = lines[j];
-                    const match = line.match(/^\[(O1|O2|O3|O4|01|02|03|04|E|EA|EB|EC|ED|SUB|TOP|LEV|ANS|END)\]\s*(.*)$/i);
-                    if (match) {
-                        flush();
-                        let tag = (match[1] || '').toUpperCase();
-                        if (tag === '01') tag = 'O1';
-                        if (tag === '02') tag = 'O2';
-                        if (tag === '03') tag = 'O3';
-                        if (tag === '04') tag = 'O4';
-                        if (tag === 'END') break;
-                        currentTag = tag;
-                        currentContent = [match[2]];
-                    } else {
-                        currentContent.push(line);
-                    }
-                }
-                flush();
-                stem = stem.trim();
-                if (!stem) continue;
-                const options = [
-                    { letter: 'A', text: o1.trim(), explanation: (ea || generalE).trim() || null },
-                    { letter: 'B', text: o2.trim(), explanation: (eb || generalE).trim() || null },
-                    { letter: 'C', text: o3.trim(), explanation: (ec || generalE).trim() || null },
-                    { letter: 'D', text: o4.trim(), explanation: (ed || generalE).trim() || null }
-                ];
-                const letters = ['A', 'B', 'C', 'D'];
-                const correctIndex = Math.max(0, letters.indexOf(correctLetter));
-                questions.push({
-                    stem,
-                    options,
-                    correctIndex,
-                    subject: subject.trim() || null,
-                    topics,
-                    difficulty
-                });
-            }
-            return questions;
-        }
-
-        function parseFlashcardRawText(text) {
-            const cards = [];
-            const blocks = text.split(/\[F\]/i);
-            for (let i = 1; i < blocks.length; i++) {
-                const block = blocks[i].trim();
-                let front = '', back = '', explanation = '';
-                const normalized = block.replace(/\[(B|E|END)\]/gi, '\n[$1]');
-                const lines = normalized.split(/\r?\n/);
-                let currentTag = 'F';
-                let currentContent = [];
-                function flush() {
-                    const s = currentContent.join('\n').trim();
-                    if (currentTag === 'F') front = s;
-                    else if (currentTag === 'B') back = s;
-                    else if (currentTag === 'E') explanation = s;
-                    currentContent = [];
-                }
-                for (let j = 0; j < lines.length; j++) {
-                    const line = lines[j];
-                    const match = line.match(/^\[(B|E|END)\]\s*(.*)$/i);
-                    if (match) {
-                        flush();
-                        const tag = (match[1] || '').toUpperCase();
-                        if (tag === 'END') break;
-                        currentTag = tag;
-                        currentContent = [match[2] || ''];
-                    } else {
-                        currentContent.push(line);
-                    }
-                }
-                flush();
-                if (!front || !back) continue;
-                cards.push({
-                    front: front.trim(),
-                    back: back.trim(),
-                    explanation: explanation.trim() || null
-                });
-            }
-            return cards;
-        }
-
-        function getBulkEditorText() {
-            const editor = window.bulkEditor;
-            if (!editor) return '';
-            const parts = [];
-            function textFromNode(node) {
-                let out = '';
-                node.descendants((n) => {
-                    if (n.isText) out += n.text;
-                    else if (n.type.name === 'hardBreak') out += '\n';
-                });
-                return out;
-            }
-            function collectBlocks(node) {
-                if (node.type.name === 'paragraph') {
-                    parts.push(textFromNode(node));
-                    return;
-                }
-                if (node.type.name === 'orderedList') {
-                    let index = 1;
-                    node.forEach((item) => {
-                        if (item.type.name === 'listItem') {
-                            parts.push(index + '. ' + textFromNode(item).replace(/^\s+|\s+$/g, ''));
-                            index += 1;
-                        }
-                    });
-                    return;
-                }
-                if (node.type.name === 'bulletList') {
-                    node.forEach((item) => {
-                        if (item.type.name === 'listItem') {
-                            parts.push('- ' + textFromNode(item).replace(/^\s+|\s+$/g, ''));
-                        }
-                    });
-                    return;
-                }
-                node.forEach(collectBlocks);
-            }
-            editor.state.doc.forEach(collectBlocks);
-            return parts.join('\n');
-        }
-
-        function showBulkImportMessage(msg, isError) {
-            const el = document.getElementById('bulk-import-message');
-            if (!el) return;
-            el.textContent = msg;
-            el.id = 'bulk-import-message';
-            el.className = (isError ? 'is-error' : 'is-success');
-            el.classList.remove('hidden');
-        }
-
-        async function saveBulkQuestions() {
-            const raw = getBulkEditorText();
-            const questions = parseBulkRawText(raw);
-            const flashcards = parseFlashcardRawText(raw);
-            if (!questions.length && !flashcards.length) {
-                showBulkImportMessage('No valid content found. Use MCQ tags ([Q]…) and/or flashcard tags ([F]…[B]…).', true);
-                return;
-            }
-            if (!window.supabase) { showBulkImportMessage('Supabase not configured. Add js/config.js.', true); return; }
-            const btn = document.getElementById('bulk-import-btn');
-            if (btn) btn.disabled = true;
-            let okMcq = 0, failMcq = 0;
-            let okFlash = 0, failFlash = 0;
-            const failures = [];
-            try {
-                showBulkImportMessage('Importing ' + questions.length + ' MCQ(s) and ' + flashcards.length + ' flashcard(s)...', false);
-
-                let nextIndexBase = 1;
-                const { data: maxRow, error: maxErr } = await window.supabase
-                    .from('questions')
-                    .select('index')
-                    .order('index', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-                if (!maxErr && maxRow && maxRow.index != null) {
-                    nextIndexBase = maxRow.index + 1;
-                } else if (maxErr) {
-                    failures.push({ step: 'read-max-index', message: maxErr.message || String(maxErr) });
-                }
-
-                for (let i = 0; i < questions.length; i++) {
-                    const q = questions[i];
-                    const qIndex = nextIndexBase + i;
-                    const { data: row, error: qErr } = await window.supabase.from('questions').insert({
-                        stem: q.stem,
-                        difficulty: q.difficulty,
-                        subject: q.subject,
-                        topics: q.topics && q.topics.length ? q.topics : null,
-                        index: qIndex
-                    }).select('id').single();
-
-                    if (qErr) {
-                        failMcq++;
-                        failures.push({ step: 'insert-question', question: (q.stem || '').slice(0, 120), message: qErr.message || JSON.stringify(qErr) });
-                        continue;
-                    }
-
-                    const opts = q.options.map((o, idx) => ({
-                        question_id: row.id,
-                        option_letter: o.letter,
-                        option_text: o.text || '(No text)',
-                        explanation: o.explanation || null,
-                        is_correct: idx === q.correctIndex
-                    }));
-                    const { error: oErr } = await window.supabase.from('options').insert(opts);
-                    if (oErr) {
-                        failMcq++;
-                        failures.push({ step: 'insert-options', question: (q.stem || '').slice(0, 120), message: oErr.message || JSON.stringify(oErr) });
-                    } else {
-                        okMcq++;
-                    }
-                }
-
-                for (let i = 0; i < flashcards.length; i++) {
-                    const fc = flashcards[i];
-                    const { error: fErr } = await window.supabase.from('flashcards').insert({
-                        front: fc.front,
-                        back: fc.back,
-                        explanation: fc.explanation
-                    });
-                    if (fErr) {
-                        failFlash++;
-                        failures.push({ step: 'insert-flashcard', flashcard: (fc.front || '').slice(0, 120), message: fErr.message || JSON.stringify(fErr) });
-                    } else {
-                        okFlash++;
-                    }
-                }
-            } catch (e) {
-                failures.push({ step: 'exception', message: (e && (e.message || String(e))) || 'Unknown error' });
-            } finally {
-                if (btn) btn.disabled = false;
-            }
-
-            if (failures.length) {
-                const first = failures[0];
-                const detail = (first.step ? first.step + ': ' : '') + (first.message || 'Unknown error');
-                const totalOk = okMcq + okFlash;
-                const totalFail = failMcq + failFlash;
-                showBulkImportMessage(totalOk + ' imported, ' + totalFail + ' failed. ' + detail, totalFail > 0);
-            } else {
-                showBulkImportMessage('Imported — MCQs: ' + okMcq + ', Flashcards: ' + okFlash + '.', false);
-            }
-
-            if ((okMcq + okFlash) > 0 && window.bulkEditor) {
-                window.bulkEditor.commands.setContent('');
-            }
-        }
-
-        function insertTag(tag) {
-            const editor = window.bulkEditor;
-            if (!editor) return;
-            const { from } = editor.state.selection;
-            const $pos = editor.state.doc.resolve(from);
-            const atLineStart = $pos.parentOffset === 0;
-            const textToInsert = (atLineStart ? '' : '\n') + tag + ' ';
-            editor.chain().focus().insertContentAt(from, textToInsert).run();
-        }
-
-        function insertMarkdown(wrapBefore, wrapAfter, placeholder) {
-            const editor = window.bulkEditor;
-            if (!editor) return;
-            const { from, to } = editor.state.selection;
-            const selected = editor.state.doc.textBetween(from, to, '');
-            const text = selected || (placeholder || '');
-            const insert = wrapBefore + text + wrapAfter;
-            const chain = editor.chain().focus();
-            if (to > from) chain.deleteRange({ from, to });
-            chain.insertContentAt(from, insert).run();
-        }
-
-        function insertMarkdownLinePrefix(prefix) {
-            const editor = window.bulkEditor;
-            if (!editor) return;
-            const { from } = editor.state.selection;
-            const $pos = editor.state.doc.resolve(from);
-            const lineStart = from - $pos.parentOffset;
-            editor.chain().focus().insertContentAt(lineStart, prefix).run();
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        async function pasteAsPlainText() {
-            const editor = window.bulkEditor;
-            if (!editor) return;
-            try {
-                const plain = navigator.clipboard && await navigator.clipboard.readText();
-                if (!plain || !plain.trim()) return;
-                const lines = plain.split(/\r?\n/);
-                const html = lines.map((line) => '<p>' + escapeHtml(line) + '</p>').join('');
-                editor.chain().focus().deleteSelection().insertContent(html).run();
-            } catch (e) {
-                console.warn('Paste as plain text failed:', e);
-            }
-        }
-
-        function toggleDarkMode() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            const icon = document.getElementById('dark-mode-icon');
-            if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const isDark = document.documentElement.classList.contains('dark');
-            const icon = document.getElementById('dark-mode-icon');
-            if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
-            const bulkImportBtn = document.getElementById('bulk-import-btn');
-            if (bulkImportBtn) bulkImportBtn.addEventListener('click', saveBulkQuestions);
-            const bulkSubmitBtn = document.getElementById('bulk-submit-btn');
-            if (bulkSubmitBtn) bulkSubmitBtn.addEventListener('click', saveBulkQuestions);
-
-            const bulkEditorHost = document.getElementById('raw-input-editor');
-            if (bulkEditorHost) {
-                bulkEditorHost.addEventListener('keydown', (e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                        e.preventDefault();
-                        saveBulkQuestions();
-                    }
-                });
-            }
-
-            const loadFileBtn = document.getElementById('bulk-load-file-btn');
-            if (loadFileBtn) loadFileBtn.addEventListener('click', loadBulkImportFile);
-        });
-
-        async function loadBulkImportFile() {
-            const editor = window.bulkEditor;
-            if (!editor) return;
-            try {
-                const res = await fetch('question-bank-import.txt');
-                if (!res.ok) throw new Error('File not found');
-                const text = await res.text();
-                const lines = text.split(/\r?\n/);
-                const html = lines.map((line) => '<p>' + escapeHtml(line) + '</p>').join('');
-                editor.commands.setContent(html);
-                showBulkImportMessage('Loaded question-bank-import.txt', false);
-            } catch (e) {
-                showBulkImportMessage('Could not load file: ' + (e.message || 'Unknown error'), true);
-            }
-        }
-    </script>
 </body>
 </html>
