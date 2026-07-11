@@ -4,6 +4,7 @@
  */
 import { supabase } from '../../lib/supabase.js';
 import { PAGE_SIZE, questionBankState } from './state.js';
+import { getDateFilterBounds, applyCreatedAtFilter } from './filters.js';
 import { renderQuestionCard } from './question-card.js';
 import { renderPagination } from './pagination.js';
 import { updateFeedCount } from './feed-count.js';
@@ -41,6 +42,7 @@ export async function loadQuestions() {
         subject = selected ? (selected.getAttribute('data-name') || '').trim() : '';
     }
     const topic = document.getElementById('filter-topic').value.trim();
+    const heading = (document.getElementById('filter-heading') && document.getElementById('filter-heading').value) ? document.getElementById('filter-heading').value.trim() : '';
     const explanationFilter = document.getElementById('filter-explanation').value.trim();
     const search = (document.getElementById('search-questions') && document.getElementById('search-questions').value) ? document.getElementById('search-questions').value.trim() : '';
     const from = questionBankState.page * PAGE_SIZE;
@@ -49,11 +51,14 @@ export async function loadQuestions() {
     let questions = [];
     let qErr = null;
     let count = 0;
+    const dateBounds = getDateFilterBounds();
     const applyQuestionBaseFilters = (query) => {
         if (level) query = query.eq('difficulty', level);
         if (subject) query = query.eq('subject', subject);
         if (topic) query = query.contains('topics', [topic]);
+        if (heading) query = query.eq('heading', heading);
         if (search) query = query.ilike('stem', '%' + search + '%');
+        query = applyCreatedAtFilter(query, dateBounds);
         return query;
     };
 
@@ -68,7 +73,7 @@ export async function loadQuestions() {
         // Explanation-filter mode uses option-level explanation presence per question.
         let allQQuery = supabase
             .from('questions')
-            .select('id, index, stem, difficulty, subject, topics')
+            .select('id, index, stem, difficulty, subject, topics, heading, created_at')
             .order('index', { ascending: true, nullsFirst: false });
         allQQuery = applyQuestionBaseFilters(allQQuery);
         const { data: allMatchingQuestions, error: allQErr } = await allQQuery;

@@ -83,6 +83,14 @@ export function renderQuestionCard(question, opts, ctx) {
     }
     card.querySelector('.question-difficulty-badge').textContent = DIFFICULTY_LABELS[question.difficulty] || question.difficulty;
     card.querySelector('.question-difficulty-badge').className = 'question-difficulty-badge badge ' + (DIFFICULTY_CLASSES[question.difficulty] || DIFFICULTY_CLASSES.medium);
+    const headingTag = card.querySelector('.question-heading-tag');
+    if (headingTag) {
+        const h = (question.heading || '').trim();
+        if (h) {
+            headingTag.textContent = h;
+            headingTag.className = 'question-heading-tag badge badge-heading';
+        }
+    }
     const subjectTag = card.querySelector('.question-subject-tag');
     if (subjectTag) {
         const sub = (question.subject || '').trim();

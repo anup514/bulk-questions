@@ -10,7 +10,9 @@ create table if not exists public.questions (
     difficulty text,
     subject text,
     topics text[],
-    index integer
+    heading text,
+    index integer,
+    created_at timestamptz not null default now()
 );
 
 alter table public.questions enable row level security;

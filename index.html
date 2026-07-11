@@ -70,6 +70,17 @@
                 <select id="filter-topic" class="filter-select" disabled>
                     <option value="">All topics</option>
                 </select>
+                <select id="filter-heading" class="filter-select" title="Filter by heading group">
+                    <option value="">All headings</option>
+                </select>
+                <select id="filter-date" class="filter-select" title="Filter by a single day">
+                    <option value="">All dates</option>
+                </select>
+                <span id="filter-date-range" class="filter-date-range">
+                    <input type="date" id="filter-date-from" class="filter-date" aria-label="From date" title="From date" />
+                    <span class="filter-date-sep" aria-hidden="true">–</span>
+                    <input type="date" id="filter-date-to" class="filter-date" aria-label="To date" title="To date" />
+                </span>
                 <select id="filter-explanation" class="filter-select">
                     <option value="">All explanations</option>
                     <option value="empty">Missing explanation</option>
@@ -96,6 +107,7 @@
                         <div class="question-card-meta">
                             <span class="question-serial-badge badge badge-neutral">1.</span>
                             <span class="question-difficulty-badge badge badge-medium">Medium</span>
+                            <span class="question-heading-tag badge badge-heading hidden"></span>
                             <span class="question-subject-tag badge badge-neutral hidden"></span>
                             <div class="question-topic-tags" style="display:flex;flex-wrap:wrap;gap:0.25rem"></div>
                         </div>

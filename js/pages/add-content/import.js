@@ -53,6 +53,7 @@ export async function saveBulkQuestions() {
                 difficulty: q.difficulty,
                 subject: q.subject,
                 topics: q.topics && q.topics.length ? q.topics : null,
+                heading: q.heading || null,
                 index: qIndex
             }).select('id').single();
 

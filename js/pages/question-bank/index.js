@@ -7,7 +7,7 @@
 import { viewState } from './state.js';
 import { initTheme } from '../../ui/theme.js';
 import '../../ui/paste-list-fix.js';
-import { initSubjectAndTopicFilters, wireFiltersAndSearch } from './filters.js';
+import { initSubjectAndTopicFilters, initDateFilter, initHeadingFilter, wireFiltersAndSearch } from './filters.js';
 import { loadQuestions, deleteAllQuestions } from './questions.js';
 import { loadFlashcards } from './flashcards.js';
 
@@ -25,7 +25,10 @@ function setActiveView(next) {
     const levelFilter = document.getElementById('filter-level');
     const subjectFilter = document.getElementById('filter-subject');
     const topicFilter = document.getElementById('filter-topic');
+    const headingFilter = document.getElementById('filter-heading');
     const explanationFilter = document.getElementById('filter-explanation');
+    const dateFilter = document.getElementById('filter-date');
+    const dateRange = document.getElementById('filter-date-range');
     const deleteAllBtn = document.getElementById('delete-all-questions-btn');
     const qFeed = document.getElementById('question-feed');
     const qLoading = document.getElementById('question-feed-loading');
@@ -42,6 +45,9 @@ function setActiveView(next) {
     if (levelFilter) levelFilter.classList.toggle('hidden', !isMcq);
     if (subjectFilter) subjectFilter.classList.toggle('hidden', !isMcq);
     if (topicFilter) topicFilter.classList.toggle('hidden', !isMcq);
+    if (headingFilter) headingFilter.classList.toggle('hidden', !isMcq);
+    if (dateFilter) dateFilter.classList.toggle('hidden', !isMcq);
+    if (dateRange) dateRange.classList.toggle('hidden', !isMcq);
     if (deleteAllBtn) deleteAllBtn.classList.toggle('hidden', !isMcq);
     if (explanationFilter) explanationFilter.classList.remove('hidden');
     if (qFeed) qFeed.classList.toggle('hidden', !isMcq);
@@ -60,7 +66,11 @@ function ready(fn) {
 
 ready(() => {
     initTheme();
-    initSubjectAndTopicFilters(refreshActiveView).finally(() => {
+    Promise.all([
+        initSubjectAndTopicFilters(refreshActiveView),
+        initDateFilter(refreshActiveView),
+        initHeadingFilter(refreshActiveView)
+    ]).finally(() => {
         wireFiltersAndSearch({
             onRefetch: refreshActiveView,
             onDeleteAll: deleteAllQuestions,
