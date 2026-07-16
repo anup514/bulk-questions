@@ -22,12 +22,34 @@ MCQ and flashcard bulk import / management UI backed by Supabase.
    ```bash
    python3 -m http.server 8080
    ```
+   The app uses native ES modules, so it must be served over HTTP — opening the
+   files directly via `file://` will not work.
 
 6. **(Optional)** Verify inserts with:
    ```bash
    node test-import-error.js
    ```
    Update the URL and anon key at the top of that file first.
+
+## Project structure
+
+The front-end is organised as ES modules (no build step required):
+
+```
+js/
+  config.js              # Supabase credentials (gitignored; copy from config.example.js)
+  lib/supabase.js        # Shared Supabase client
+  render/                # Markdown + LaTeX rendering (shared)
+  parsers/bulk.js        # Tagged bulk-import text parsers (shared)
+  data/taxonomy.js       # Loads subjects/topics from assets/*.json
+  ui/                    # theme toggle, paste-list fix
+  pages/
+    question-bank/       # index.html: state, filters, pagination, cards, feeds
+    add-content/         # add-question.html: editor, toolbar, import pipeline
+```
+
+Each HTML page loads a single module entry point
+(`js/pages/<page>/index.js`), which composes the feature modules.
 
 ## Notes
 

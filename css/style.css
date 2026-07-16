@@ -21,6 +21,14 @@
     --max-w: 48rem;
 }
 
+@media (min-width: 1024px) {
+    :root { --max-w: 64rem; }
+}
+
+@media (min-width: 1280px) {
+    :root { --max-w: 76rem; }
+}
+
 html.dark {
     --clr-bg: #0b1120;
     --clr-surface: #111827;
@@ -192,6 +200,13 @@ textarea, input, select, button {
     gap: 0.5rem;
 }
 
+.feed-count {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--clr-text-secondary);
+    white-space: nowrap;
+}
+
 /* Segmented control */
 .segments {
     display: inline-flex;
@@ -314,6 +329,7 @@ html.dark .segments__btn.is-active {
     height: 1.75rem;
     padding: 0 0.25rem;
     font-size: 0.75rem;
+    text-align: center;
 }
 
 .pagination--vertical .pagination__jump .btn {
@@ -388,6 +404,14 @@ html.dark .segments__btn.is-active {
     background: var(--clr-surface);
     color: var(--clr-text);
     outline: none;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.pagination__jump input::-webkit-inner-spin-button,
+.pagination__jump input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .pagination__jump input:focus {
@@ -520,11 +544,9 @@ html.dark .badge-hard { color: #fca5a5; background: rgba(185, 28, 28, 0.25); }
 
 /* Question options */
 .option-row {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 0.75rem;
-    row-gap: 0.5rem;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     padding: 0.875rem 1rem;
     border: 1px solid var(--clr-border);
     border-radius: var(--radius);
@@ -537,11 +559,11 @@ html.dark .badge-hard { color: #fca5a5; background: rgba(185, 28, 28, 0.25); }
     background: var(--clr-primary-muted);
 }
 
-.option-row__meta {
+.option-row__head {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.5rem;
-    padding-top: 0.125rem;
 }
 
 .correct-option-label {
