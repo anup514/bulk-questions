@@ -6,7 +6,94 @@
 import { supabase } from '../../lib/supabase.js';
 import { renderFormattedText } from '../../render/markdown.js';
 import { renderTextWithLatex } from '../../render/latex.js';
-import { DIFFICULTY_LABELS, DIFFICULTY_CLASSES } from './state.js';
+import { topicsForSubject } from '../../data/taxonomy.js';
+import { DIFFICULTY_LABELS, DIFFICULTY_CLASSES, taxonomy } from './state.js';
+
+let openMetaMenu = null;
+
+function closeMetaMenu() {
+    if (!openMetaMenu) return;
+    openMetaMenu.remove();
+    openMetaMenu = null;
+}
+
+document.addEventListener('click', (e) => {
+    if (openMetaMenu && !openMetaMenu.contains(e.target) && !e.target.closest('.meta-badge')) {
+        closeMetaMenu();
+    }
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMetaMenu();
+});
+
+/**
+ * @param {HTMLElement} trigger
+ * @param {{ value: string, label: string }[]} options
+ * @param {string} currentValue
+ * @param {(value: string) => void | Promise<void>} onSelect
+ */
+function openMetaDropdown(trigger, options, currentValue, onSelect) {
+    closeMetaMenu();
+    const menu = document.createElement('div');
+    menu.className = 'meta-badge-menu';
+    menu.setAttribute('role', 'listbox');
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'meta-badge-menu__item' + (opt.value === currentValue ? ' is-selected' : '');
+        btn.setAttribute('role', 'option');
+        btn.textContent = opt.label;
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            closeMetaMenu();
+            if (opt.value === currentValue) return;
+            await onSelect(opt.value);
+        });
+        menu.appendChild(btn);
+    });
+    const rect = trigger.getBoundingClientRect();
+    menu.style.top = (rect.bottom + 4) + 'px';
+    menu.style.left = rect.left + 'px';
+    document.body.appendChild(menu);
+    openMetaMenu = menu;
+    const menuRect = menu.getBoundingClientRect();
+    if (menuRect.right > window.innerWidth - 8) {
+        menu.style.left = Math.max(8, rect.right - menuRect.width) + 'px';
+    }
+    if (menuRect.bottom > window.innerHeight - 8) {
+        menu.style.top = Math.max(8, rect.top - menuRect.height - 4) + 'px';
+    }
+}
+
+/**
+ * @param {HTMLElement} el
+ * @param {() => { value: string, label: string }[]} getOptions
+ * @param {() => string} getValue
+ * @param {(value: string) => void | Promise<void>} onSelect
+ */
+function wireMetaBadge(el, getOptions, getValue, onSelect) {
+    if (!el) return;
+    el.classList.add('meta-badge');
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('title', 'Click to change');
+    const open = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const opts = getOptions();
+        if (!opts.length) return;
+        openMetaDropdown(el, opts, getValue(), onSelect);
+    };
+    el.addEventListener('click', open);
+    el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') open(e);
+    });
+}
+
+function subjectIdByName(name) {
+    const match = (taxonomy.subjects || []).find(s => s.name === name);
+    return match ? match.id : null;
+}
 
 function createOptionExpInput(row, initialValue) {
     const ta = document.createElement('textarea');
@@ -81,28 +168,95 @@ export function renderQuestionCard(question, opts, ctx) {
         const n = (question.index || 0);
         serialEl.textContent = n.toString() + '.';
     }
-    card.querySelector('.question-difficulty-badge').textContent = DIFFICULTY_LABELS[question.difficulty] || question.difficulty;
-    card.querySelector('.question-difficulty-badge').className = 'question-difficulty-badge badge ' + (DIFFICULTY_CLASSES[question.difficulty] || DIFFICULTY_CLASSES.medium);
+    const difficultyBadge = card.querySelector('.question-difficulty-badge');
+    function paintDifficulty() {
+        const key = question.difficulty || 'medium';
+        difficultyBadge.textContent = DIFFICULTY_LABELS[key] || key;
+        difficultyBadge.className = 'question-difficulty-badge badge meta-badge ' + (DIFFICULTY_CLASSES[key] || DIFFICULTY_CLASSES.medium);
+    }
+    paintDifficulty();
+
     const subjectTag = card.querySelector('.question-subject-tag');
-    if (subjectTag) {
+    function paintSubject() {
+        if (!subjectTag) return;
         const sub = (question.subject || '').trim();
-        if (sub) {
-            subjectTag.textContent = sub;
-            subjectTag.className = 'question-subject-tag badge badge-neutral';
-        }
+        subjectTag.classList.remove('hidden');
+        subjectTag.textContent = sub || 'Subject';
+        subjectTag.className = 'question-subject-tag badge badge-neutral meta-badge' + (sub ? '' : ' meta-badge--empty');
     }
+    paintSubject();
+
     const topicTagsEl = card.querySelector('.question-topic-tags');
-    if (topicTagsEl) {
+    let topicBadge = null;
+    function paintTopic() {
+        if (!topicTagsEl) return;
         const topics = Array.isArray(question.topics) ? question.topics : [];
-        topics.forEach(t => {
-            const tStr = (t || '').toString().trim();
-            if (!tStr) return;
-            const span = document.createElement('span');
-            span.className = 'badge badge-topic';
-            span.textContent = tStr;
-            topicTagsEl.appendChild(span);
-        });
+        const primary = (topics[0] || '').toString().trim();
+        if (!topicBadge) {
+            topicBadge = document.createElement('span');
+            topicTagsEl.appendChild(topicBadge);
+            wireMetaBadge(
+                topicBadge,
+                () => {
+                    const sid = subjectIdByName((question.subject || '').trim());
+                    const list = topicsForSubject(taxonomy.topics, sid);
+                    return list.map(t => ({ value: t.name, label: t.name }));
+                },
+                () => ((Array.isArray(question.topics) && question.topics[0]) || '').toString().trim(),
+                async (value) => {
+                    if (!supabase) { alert('Supabase not configured.'); return; }
+                    const nextTopics = value ? [value] : null;
+                    const { error } = await supabase.from('questions').update({ topics: nextTopics }).eq('id', question.id);
+                    if (error) { alert('Failed to update topic: ' + error.message); return; }
+                    question.topics = nextTopics;
+                    paintTopic();
+                }
+            );
+        }
+        topicBadge.className = 'badge badge-topic meta-badge' + (primary ? '' : ' meta-badge--empty');
+        topicBadge.textContent = primary || 'Topic';
+        topicBadge.classList.toggle('hidden', !(question.subject || '').trim() && !primary);
     }
+    paintTopic();
+
+    wireMetaBadge(
+        difficultyBadge,
+        () => [
+            { value: 'easy', label: DIFFICULTY_LABELS.easy },
+            { value: 'medium', label: DIFFICULTY_LABELS.medium },
+            { value: 'hard', label: DIFFICULTY_LABELS.hard }
+        ],
+        () => question.difficulty || 'medium',
+        async (value) => {
+            if (!supabase) { alert('Supabase not configured.'); return; }
+            const { error } = await supabase.from('questions').update({ difficulty: value }).eq('id', question.id);
+            if (error) { alert('Failed to update level: ' + error.message); return; }
+            question.difficulty = value;
+            paintDifficulty();
+        }
+    );
+
+    wireMetaBadge(
+        subjectTag,
+        () => (taxonomy.subjects || []).map(s => ({ value: s.name, label: s.name })),
+        () => (question.subject || '').trim(),
+        async (value) => {
+            if (!supabase) { alert('Supabase not configured.'); return; }
+            const sid = subjectIdByName(value);
+            const allowed = topicsForSubject(taxonomy.topics, sid).map(t => t.name);
+            const currentTopic = (Array.isArray(question.topics) && question.topics[0]) || '';
+            const nextTopics = currentTopic && allowed.includes(currentTopic) ? [currentTopic] : null;
+            const { error } = await supabase
+                .from('questions')
+                .update({ subject: value || null, topics: nextTopics })
+                .eq('id', question.id);
+            if (error) { alert('Failed to update subject: ' + error.message); return; }
+            question.subject = value || null;
+            question.topics = nextTopics;
+            paintSubject();
+            paintTopic();
+        }
+    );
     const stemEl = card.querySelector('.question-stem');
     stemEl.classList.add('rendered-markdown');
     stemEl.innerHTML = renderFormattedText(question.stem || '');
