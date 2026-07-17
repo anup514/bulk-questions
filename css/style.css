@@ -271,36 +271,6 @@ html.dark .segments__btn.is-active {
     cursor: not-allowed;
 }
 
-.filter-date-range {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-}
-
-.filter-date-sep {
-    font-size: 0.8125rem;
-    color: var(--clr-text-secondary);
-    user-select: none;
-}
-
-.filter-date {
-    height: 2rem;
-    padding: 0 0.5rem;
-    font-size: 0.8125rem;
-    font-family: inherit;
-    color: var(--clr-text);
-    border: 1px solid var(--clr-border);
-    border-radius: var(--radius);
-    background: var(--clr-surface);
-    outline: none;
-    cursor: pointer;
-}
-
-.filter-date:focus {
-    border-color: var(--clr-primary);
-    box-shadow: 0 0 0 2px var(--clr-primary-muted);
-}
-
 .app-main:has(#pagination-rail:not(.hidden)) {
     padding-right: 3.75rem;
 }
@@ -576,6 +546,49 @@ html.dark .badge-hard { color: #fca5a5; background: rgba(185, 28, 28, 0.25); }
     color: var(--clr-primary);
     background: color-mix(in srgb, var(--clr-primary) 12%, transparent);
     font-weight: 600;
+}
+
+select.badge-select {
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    border: none;
+    margin: 0;
+    font: inherit;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    max-width: none;
+    padding-left: 0.5rem;
+    padding-right: 1.35rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2364748b' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.4rem center;
+    background-size: 0.5rem;
+}
+
+select.badge-select:hover {
+    filter: brightness(0.97);
+}
+
+select.badge-select:focus {
+    outline: 2px solid color-mix(in srgb, var(--clr-primary) 45%, transparent);
+    outline-offset: 1px;
+}
+
+select.badge-select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+html.dark select.badge-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2394a3b8' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+}
+
+html.dark select.badge-select:hover {
+    filter: brightness(1.08);
 }
 
 /* Question options */

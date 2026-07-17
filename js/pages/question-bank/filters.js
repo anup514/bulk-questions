@@ -1,128 +1,13 @@
 /**
  * Filter bar wiring: subject/topic dropdowns (from the static taxonomy),
- * level/date/explanation selects, search box, view segments, and delete-all.
+ * level/explanation selects, search box, view segments, and delete-all.
  */
-import { supabase } from '../../lib/supabase.js';
 import { questionBankState, taxonomy } from './state.js';
 import { loadTaxonomy, topicsForSubject } from '../../data/taxonomy.js';
-
-function formatDisplayDate(isoDate) {
-    const [y, m, d] = isoDate.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString(undefined, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    });
-}
-
-function localDateKey(isoTimestamp) {
-    const d = new Date(isoTimestamp);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return y + '-' + m + '-' + day;
-}
-
-function dayStart(isoDate) {
-    const [y, m, d] = isoDate.split('-').map(Number);
-    return new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
-}
-
-function dayEnd(isoDate) {
-    const [y, m, d] = isoDate.split('-').map(Number);
-    return new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
-}
-
-/** @returns {{ start: string|null, end: string|null }} */
-export function getDateFilterBounds() {
-    const fromEl = document.getElementById('filter-date-from');
-    const toEl = document.getElementById('filter-date-to');
-    const singleEl = document.getElementById('filter-date');
-    const from = fromEl && fromEl.value ? fromEl.value.trim() : '';
-    const to = toEl && toEl.value ? toEl.value.trim() : '';
-    const single = singleEl && singleEl.value ? singleEl.value.trim() : '';
-
-    if (from || to) {
-        return {
-            start: from ? dayStart(from) : null,
-            end: to ? dayEnd(to) : null
-        };
-    }
-    if (single) {
-        return { start: dayStart(single), end: dayEnd(single) };
-    }
-    return { start: null, end: null };
-}
-
-export function applyCreatedAtFilter(query, bounds) {
-    if (bounds.start) query = query.gte('created_at', bounds.start);
-    if (bounds.end) query = query.lte('created_at', bounds.end);
-    return query;
-}
+import { HEADING_ORDER } from '../../data/headings.js';
 
 /**
- * Populates the date filter dropdown with distinct question dates from the DB
- * and wires single-day vs range filter inputs.
- * @param {() => void} onFilterChange
- */
-export async function initDateFilter(onFilterChange) {
-    const dateSelect = document.getElementById('filter-date');
-    const fromEl = document.getElementById('filter-date-from');
-    const toEl = document.getElementById('filter-date-to');
-    if (!dateSelect) return;
-
-    const refetch = () => {
-        questionBankState.page = 0;
-        onFilterChange();
-    };
-
-    const selected = dateSelect.value;
-    dateSelect.innerHTML = '';
-    const defaultOpt = document.createElement('option');
-    defaultOpt.value = '';
-    defaultOpt.textContent = 'All dates';
-    dateSelect.appendChild(defaultOpt);
-
-    if (supabase) {
-        try {
-            const { data, error } = await supabase.from('questions').select('created_at');
-            if (!error && data) {
-                const dates = new Set();
-                data.forEach(row => {
-                    if (row.created_at) dates.add(localDateKey(row.created_at));
-                });
-                [...dates].sort().reverse().forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d;
-                    opt.textContent = formatDisplayDate(d);
-                    dateSelect.appendChild(opt);
-                });
-            }
-        } catch (e) {
-            console.error('Error loading date filter options', e);
-        }
-    }
-
-    if (selected && [...dateSelect.options].some(o => o.value === selected)) {
-        dateSelect.value = selected;
-    }
-
-    dateSelect.addEventListener('change', () => {
-        if (fromEl) fromEl.value = '';
-        if (toEl) toEl.value = '';
-        refetch();
-    });
-
-    const onRangeChange = () => {
-        if (dateSelect.value) dateSelect.value = '';
-        refetch();
-    };
-    if (fromEl) fromEl.addEventListener('change', onRangeChange);
-    if (toEl) toEl.addEventListener('change', onRangeChange);
-}
-
-/**
- * Populates the heading filter dropdown with distinct headings from the DB.
+ * Populates the heading filter dropdown in canonical chapter order.
  * @param {() => void} onFilterChange
  */
 export async function initHeadingFilter(onFilterChange) {
@@ -141,26 +26,12 @@ export async function initHeadingFilter(onFilterChange) {
     defaultOpt.textContent = 'All headings';
     headingSelect.appendChild(defaultOpt);
 
-    if (supabase) {
-        try {
-            const { data, error } = await supabase.from('questions').select('heading');
-            if (!error && data) {
-                const headings = new Set();
-                data.forEach(row => {
-                    const h = (row.heading || '').trim();
-                    if (h) headings.add(h);
-                });
-                [...headings].sort((a, b) => a.localeCompare(b)).forEach(h => {
-                    const opt = document.createElement('option');
-                    opt.value = h;
-                    opt.textContent = h;
-                    headingSelect.appendChild(opt);
-                });
-            }
-        } catch (e) {
-            console.error('Error loading heading filter options', e);
-        }
-    }
+    HEADING_ORDER.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = h;
+        headingSelect.appendChild(opt);
+    });
 
     if (selected && [...headingSelect.options].some(o => o.value === selected)) {
         headingSelect.value = selected;

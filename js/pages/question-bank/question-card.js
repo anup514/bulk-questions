@@ -6,7 +6,177 @@
 import { supabase } from '../../lib/supabase.js';
 import { renderFormattedText } from '../../render/markdown.js';
 import { renderTextWithLatex } from '../../render/latex.js';
-import { DIFFICULTY_LABELS, DIFFICULTY_CLASSES } from './state.js';
+import { topicsForSubject } from '../../data/taxonomy.js';
+import { DIFFICULTY_LABELS, DIFFICULTY_CLASSES, taxonomy } from './state.js';
+
+function fitBadgeSelectWidth(select) {
+    const opt = select.options[select.selectedIndex];
+    const label = (opt && opt.textContent) || select.getAttribute('data-placeholder') || '';
+    const rootFs = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const probe = document.createElement('span');
+    probe.style.cssText = [
+        'position:absolute',
+        'visibility:hidden',
+        'white-space:nowrap',
+        'pointer-events:none',
+        'left:-9999px',
+        'top:0',
+        'font-size:0.6875rem',
+        'font-weight:500',
+        'letter-spacing:0.02em',
+        'font-family:' + getComputedStyle(document.body).fontFamily
+    ].join(';');
+    probe.textContent = label;
+    document.body.appendChild(probe);
+    const textWidth = probe.getBoundingClientRect().width;
+    probe.remove();
+    // Match select.badge-select paddings: 0.5rem left, 1.35rem right (chevron)
+    select.style.width = Math.ceil(textWidth + (0.5 + 1.35) * rootFs) + 'px';
+}
+
+function fillSelectOptions(select, items, selectedValue, placeholder) {
+    select.innerHTML = '';
+    if (placeholder != null) {
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = placeholder;
+        select.appendChild(empty);
+        select.setAttribute('data-placeholder', placeholder);
+    }
+    items.forEach(item => {
+        const value = typeof item === 'string' ? item : item.value;
+        const label = typeof item === 'string' ? item : item.label;
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = label;
+        select.appendChild(opt);
+    });
+    select.value = selectedValue || '';
+    if (selectedValue && select.value !== selectedValue) {
+        const orphan = document.createElement('option');
+        orphan.value = selectedValue;
+        orphan.textContent = selectedValue;
+        select.appendChild(orphan);
+        select.value = selectedValue;
+    }
+    fitBadgeSelectWidth(select);
+}
+
+async function persistQuestionMeta(question, patch) {
+    if (!supabase) {
+        alert('Supabase not configured.');
+        return false;
+    }
+    const { error } = await supabase.from('questions').update(patch).eq('id', question.id);
+    if (error) {
+        alert('Failed to update: ' + error.message);
+        return false;
+    }
+    Object.assign(question, patch);
+    return true;
+}
+
+function subjectIdByName(name) {
+    const match = (taxonomy.subjects || []).find(s => s.name === name);
+    return match ? match.id : null;
+}
+
+function mountEditableMetaTags(card, question) {
+    const difficultyEl = card.querySelector('.question-difficulty-badge');
+    if (difficultyEl) {
+        const select = document.createElement('select');
+        const diffClass = DIFFICULTY_CLASSES[question.difficulty] || DIFFICULTY_CLASSES.medium;
+        select.className = 'question-difficulty-badge badge badge-select ' + diffClass;
+        select.title = 'Change difficulty';
+        select.setAttribute('aria-label', 'Difficulty');
+        fillSelectOptions(select, [
+            { value: 'easy', label: DIFFICULTY_LABELS.easy },
+            { value: 'medium', label: DIFFICULTY_LABELS.medium },
+            { value: 'hard', label: DIFFICULTY_LABELS.hard }
+        ], question.difficulty || 'medium');
+        select.addEventListener('change', async () => {
+            const prev = question.difficulty;
+            const next = select.value;
+            select.className = 'question-difficulty-badge badge badge-select ' + (DIFFICULTY_CLASSES[next] || DIFFICULTY_CLASSES.medium);
+            fitBadgeSelectWidth(select);
+            const ok = await persistQuestionMeta(question, { difficulty: next });
+            if (!ok) {
+                select.value = prev || 'medium';
+                select.className = 'question-difficulty-badge badge badge-select ' + (DIFFICULTY_CLASSES[prev] || DIFFICULTY_CLASSES.medium);
+                fitBadgeSelectWidth(select);
+            }
+        });
+        difficultyEl.replaceWith(select);
+    }
+
+    const subjectEl = card.querySelector('.question-subject-tag');
+    const topicTagsEl = card.querySelector('.question-topic-tags');
+    let topicSelect = null;
+
+    function rebuildTopicOptions(subjectName, selectedTopic) {
+        if (!topicSelect) return;
+        const sid = subjectIdByName(subjectName);
+        const topics = topicsForSubject(taxonomy.topics, sid).map(t => t.name);
+        fillSelectOptions(topicSelect, topics, selectedTopic || '', 'Topic');
+        topicSelect.disabled = !subjectName || topics.length === 0;
+    }
+
+    if (subjectEl) {
+        const select = document.createElement('select');
+        select.className = 'question-subject-tag badge badge-select badge-neutral';
+        select.title = 'Change subject';
+        select.setAttribute('aria-label', 'Subject');
+        const subjectNames = (taxonomy.subjects || []).map(s => s.name);
+        const currentSubject = (question.subject || '').trim();
+        fillSelectOptions(select, subjectNames, currentSubject, 'Subject');
+        select.addEventListener('change', async () => {
+            const prevSubject = question.subject || '';
+            const prevTopics = Array.isArray(question.topics) ? question.topics.slice() : [];
+            const nextSubject = select.value;
+            const sid = subjectIdByName(nextSubject);
+            const allowed = new Set(topicsForSubject(taxonomy.topics, sid).map(t => t.name));
+            const kept = (prevTopics || []).filter(t => allowed.has(t));
+            const nextTopics = kept.length ? kept : null;
+            fitBadgeSelectWidth(select);
+            rebuildTopicOptions(nextSubject, nextTopics && nextTopics[0] ? nextTopics[0] : '');
+            const ok = await persistQuestionMeta(question, {
+                subject: nextSubject || null,
+                topics: nextTopics
+            });
+            if (!ok) {
+                select.value = prevSubject;
+                fitBadgeSelectWidth(select);
+                rebuildTopicOptions(prevSubject, prevTopics[0] || '');
+                question.subject = prevSubject;
+                question.topics = prevTopics;
+            }
+        });
+        subjectEl.replaceWith(select);
+    }
+
+    if (topicTagsEl) {
+        topicTagsEl.innerHTML = '';
+        topicSelect = document.createElement('select');
+        topicSelect.className = 'badge badge-select badge-topic';
+        topicSelect.title = 'Change topic';
+        topicSelect.setAttribute('aria-label', 'Topic');
+        const currentTopics = Array.isArray(question.topics) ? question.topics : [];
+        const currentTopic = (currentTopics[0] || '').toString().trim();
+        rebuildTopicOptions((question.subject || '').trim(), currentTopic);
+        topicSelect.addEventListener('change', async () => {
+            const prevTopics = Array.isArray(question.topics) ? question.topics.slice() : [];
+            const next = topicSelect.value;
+            const nextTopics = next ? [next] : null;
+            fitBadgeSelectWidth(topicSelect);
+            const ok = await persistQuestionMeta(question, { topics: nextTopics });
+            if (!ok) {
+                topicSelect.value = (prevTopics[0] || '').toString();
+                fitBadgeSelectWidth(topicSelect);
+            }
+        });
+        topicTagsEl.appendChild(topicSelect);
+    }
+}
 
 function createOptionExpInput(row, initialValue) {
     const ta = document.createElement('textarea');
@@ -81,8 +251,6 @@ export function renderQuestionCard(question, opts, ctx) {
         const n = (question.index || 0);
         serialEl.textContent = n.toString() + '.';
     }
-    card.querySelector('.question-difficulty-badge').textContent = DIFFICULTY_LABELS[question.difficulty] || question.difficulty;
-    card.querySelector('.question-difficulty-badge').className = 'question-difficulty-badge badge ' + (DIFFICULTY_CLASSES[question.difficulty] || DIFFICULTY_CLASSES.medium);
     const headingTag = card.querySelector('.question-heading-tag');
     if (headingTag) {
         const h = (question.heading || '').trim();
@@ -91,26 +259,7 @@ export function renderQuestionCard(question, opts, ctx) {
             headingTag.className = 'question-heading-tag badge badge-heading';
         }
     }
-    const subjectTag = card.querySelector('.question-subject-tag');
-    if (subjectTag) {
-        const sub = (question.subject || '').trim();
-        if (sub) {
-            subjectTag.textContent = sub;
-            subjectTag.className = 'question-subject-tag badge badge-neutral';
-        }
-    }
-    const topicTagsEl = card.querySelector('.question-topic-tags');
-    if (topicTagsEl) {
-        const topics = Array.isArray(question.topics) ? question.topics : [];
-        topics.forEach(t => {
-            const tStr = (t || '').toString().trim();
-            if (!tStr) return;
-            const span = document.createElement('span');
-            span.className = 'badge badge-topic';
-            span.textContent = tStr;
-            topicTagsEl.appendChild(span);
-        });
-    }
+    mountEditableMetaTags(card, question);
     const stemEl = card.querySelector('.question-stem');
     stemEl.classList.add('rendered-markdown');
     stemEl.innerHTML = renderFormattedText(question.stem || '');
