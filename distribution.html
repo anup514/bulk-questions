@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Distribution — SR Bulk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <script src="js/config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script type="module" src="js/pages/distribution/index.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="app-header__inner">
+            <a href="index.html" class="app-brand">SR Bulk</a>
+            <nav class="app-nav">
+                <a class="app-nav__link" href="index.html">Question Bank</a>
+                <a class="app-nav__link" href="add-question.html">Add Content</a>
+                <a class="app-nav__link is-active" href="distribution.html">Distribution</a>
+            </nav>
+            <div class="app-header__spacer"></div>
+            <div class="app-header__actions">
+                <button type="button" id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
+                    <span id="dark-mode-icon" class="material-symbols-outlined">light_mode</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="app-main">
+        <div class="app-container dist-page">
+            <div class="page-heading">
+                <h1>Distribution</h1>
+                <p>How questions are spread across headings and levels (from index 223 onward).</p>
+            </div>
+
+            <div id="dist-loading" class="state-message">Loading distribution…</div>
+            <div id="dist-error" class="state-message hidden"></div>
+            <div id="dist-empty" class="state-message hidden">No questions yet. Add some from Add Content.</div>
+
+            <div id="dist-content" class="hidden">
+                <div class="dist-summary" id="dist-summary"></div>
+
+                <div class="dist-grid">
+                    <section class="dist-panel">
+                        <div class="dist-panel__header">
+                            <h2>Levels</h2>
+                            <p>Hover a slice or legend row to inspect a level</p>
+                        </div>
+                        <div class="dist-pie-layout">
+                            <div class="dist-chart-wrap dist-chart-wrap--pie dist-chart-wrap--pie-sm">
+                                <canvas id="dist-levels-chart" aria-label="Question count by level"></canvas>
+                            </div>
+                            <ul id="dist-levels-legend" class="dist-legend"></ul>
+                        </div>
+                    </section>
+
+                    <section class="dist-panel dist-panel--wide">
+                        <div class="dist-panel__header">
+                            <h2>Headings</h2>
+                            <p>Hover a slice or legend row to inspect a chapter</p>
+                        </div>
+                        <div class="dist-pie-layout">
+                            <div class="dist-chart-wrap dist-chart-wrap--pie">
+                                <canvas id="dist-headings-chart" aria-label="Question count by heading"></canvas>
+                            </div>
+                            <ul id="dist-headings-legend" class="dist-legend"></ul>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
