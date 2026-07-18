@@ -8,6 +8,14 @@ import { renderQuestionCard } from './question-card.js';
 import { renderPagination } from './pagination.js';
 import { updateFeedCount } from './feed-count.js';
 
+/** Fetch size when loading all matching questions for explanation filtering. */
+const FETCH_PAGE_SIZE = 1000;
+/**
+ * Max IDs per `.in()` call. Large UUID lists blow past PostgREST URL limits
+ * and return 400 Bad Request.
+ */
+const IN_FILTER_CHUNK = 100;
+
 function goToPage(page) {
     questionBankState.page = page;
     loadQuestions();
@@ -15,6 +23,21 @@ function goToPage(page) {
 
 function refreshPagination() {
     renderPagination(goToPage);
+}
+
+/** Load options for many question IDs in URL-safe chunks. */
+async function fetchOptionsByQuestionIds(questionIds) {
+    const options = [];
+    for (let i = 0; i < questionIds.length; i += IN_FILTER_CHUNK) {
+        const chunk = questionIds.slice(i, i + IN_FILTER_CHUNK);
+        const { data, error } = await supabase
+            .from('options')
+            .select('question_id, explanation')
+            .in('question_id', chunk);
+        if (error) return { data: null, error };
+        options.push(...(data || []));
+    }
+    return { data: options, error: null };
 }
 
 export async function loadQuestions() {
@@ -69,25 +92,33 @@ export async function loadQuestions() {
         count = result.count || 0;
     } else {
         // Explanation-filter mode uses option-level explanation presence per question.
-        let allQQuery = supabase
-            .from('questions')
-            .select('id, index, stem, difficulty, subject, topics, heading')
-            .order('index', { ascending: true, nullsFirst: false });
-        allQQuery = applyQuestionBaseFilters(allQQuery);
-        const { data: allMatchingQuestions, error: allQErr } = await allQQuery;
-        if (allQErr) {
-            qErr = allQErr;
-        } else {
-            const allQuestions = allMatchingQuestions || [];
+        const allQuestions = [];
+        let fetchFrom = 0;
+        while (true) {
+            let pageQuery = supabase
+                .from('questions')
+                .select('id, index, stem, difficulty, subject, topics, heading')
+                .order('index', { ascending: true, nullsFirst: false })
+                .range(fetchFrom, fetchFrom + FETCH_PAGE_SIZE - 1);
+            pageQuery = applyQuestionBaseFilters(pageQuery);
+            const { data: pageRows, error: pageErr } = await pageQuery;
+            if (pageErr) {
+                qErr = pageErr;
+                break;
+            }
+            const batch = pageRows || [];
+            allQuestions.push(...batch);
+            if (batch.length < FETCH_PAGE_SIZE) break;
+            fetchFrom += FETCH_PAGE_SIZE;
+        }
+
+        if (!qErr) {
             if (allQuestions.length === 0) {
                 questions = [];
                 count = 0;
             } else {
                 const allIds = allQuestions.map(q => q.id);
-                const { data: optionsForAll, error: optionsFilterErr } = await supabase
-                    .from('options')
-                    .select('question_id, explanation')
-                    .in('question_id', allIds);
+                const { data: optionsForAll, error: optionsFilterErr } = await fetchOptionsByQuestionIds(allIds);
                 if (optionsFilterErr) {
                     qErr = optionsFilterErr;
                 } else {

@@ -9,173 +9,90 @@ import { renderTextWithLatex } from '../../render/latex.js';
 import { topicsForSubject } from '../../data/taxonomy.js';
 import { DIFFICULTY_LABELS, DIFFICULTY_CLASSES, taxonomy } from './state.js';
 
-function fitBadgeSelectWidth(select) {
-    const opt = select.options[select.selectedIndex];
-    const label = (opt && opt.textContent) || select.getAttribute('data-placeholder') || '';
-    const rootFs = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-    const probe = document.createElement('span');
-    probe.style.cssText = [
-        'position:absolute',
-        'visibility:hidden',
-        'white-space:nowrap',
-        'pointer-events:none',
-        'left:-9999px',
-        'top:0',
-        'font-size:0.6875rem',
-        'font-weight:500',
-        'letter-spacing:0.02em',
-        'font-family:' + getComputedStyle(document.body).fontFamily
-    ].join(';');
-    probe.textContent = label;
-    document.body.appendChild(probe);
-    const textWidth = probe.getBoundingClientRect().width;
-    probe.remove();
-    // Match select.badge-select paddings: 0.5rem left, 1.35rem right (chevron)
-    select.style.width = Math.ceil(textWidth + (0.5 + 1.35) * rootFs) + 'px';
+let openMetaMenu = null;
+
+function closeMetaMenu() {
+    if (!openMetaMenu) return;
+    openMetaMenu.remove();
+    openMetaMenu = null;
 }
 
-function fillSelectOptions(select, items, selectedValue, placeholder) {
-    select.innerHTML = '';
-    if (placeholder != null) {
-        const empty = document.createElement('option');
-        empty.value = '';
-        empty.textContent = placeholder;
-        select.appendChild(empty);
-        select.setAttribute('data-placeholder', placeholder);
+document.addEventListener('click', (e) => {
+    if (openMetaMenu && !openMetaMenu.contains(e.target) && !e.target.closest('.meta-badge')) {
+        closeMetaMenu();
     }
-    items.forEach(item => {
-        const value = typeof item === 'string' ? item : item.value;
-        const label = typeof item === 'string' ? item : item.label;
-        const opt = document.createElement('option');
-        opt.value = value;
-        opt.textContent = label;
-        select.appendChild(opt);
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMetaMenu();
+});
+
+/**
+ * @param {HTMLElement} trigger
+ * @param {{ value: string, label: string }[]} options
+ * @param {string} currentValue
+ * @param {(value: string) => void | Promise<void>} onSelect
+ */
+function openMetaDropdown(trigger, options, currentValue, onSelect) {
+    closeMetaMenu();
+    const menu = document.createElement('div');
+    menu.className = 'meta-badge-menu';
+    menu.setAttribute('role', 'listbox');
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'meta-badge-menu__item' + (opt.value === currentValue ? ' is-selected' : '');
+        btn.setAttribute('role', 'option');
+        btn.textContent = opt.label;
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            closeMetaMenu();
+            if (opt.value === currentValue) return;
+            await onSelect(opt.value);
+        });
+        menu.appendChild(btn);
     });
-    select.value = selectedValue || '';
-    if (selectedValue && select.value !== selectedValue) {
-        const orphan = document.createElement('option');
-        orphan.value = selectedValue;
-        orphan.textContent = selectedValue;
-        select.appendChild(orphan);
-        select.value = selectedValue;
+    const rect = trigger.getBoundingClientRect();
+    menu.style.top = (rect.bottom + 4) + 'px';
+    menu.style.left = rect.left + 'px';
+    document.body.appendChild(menu);
+    openMetaMenu = menu;
+    const menuRect = menu.getBoundingClientRect();
+    if (menuRect.right > window.innerWidth - 8) {
+        menu.style.left = Math.max(8, rect.right - menuRect.width) + 'px';
     }
-    fitBadgeSelectWidth(select);
+    if (menuRect.bottom > window.innerHeight - 8) {
+        menu.style.top = Math.max(8, rect.top - menuRect.height - 4) + 'px';
+    }
 }
 
-async function persistQuestionMeta(question, patch) {
-    if (!supabase) {
-        alert('Supabase not configured.');
-        return false;
-    }
-    const { error } = await supabase.from('questions').update(patch).eq('id', question.id);
-    if (error) {
-        alert('Failed to update: ' + error.message);
-        return false;
-    }
-    Object.assign(question, patch);
-    return true;
+/**
+ * @param {HTMLElement} el
+ * @param {() => { value: string, label: string }[]} getOptions
+ * @param {() => string} getValue
+ * @param {(value: string) => void | Promise<void>} onSelect
+ */
+function wireMetaBadge(el, getOptions, getValue, onSelect) {
+    if (!el) return;
+    el.classList.add('meta-badge');
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('title', 'Click to change');
+    const open = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const opts = getOptions();
+        if (!opts.length) return;
+        openMetaDropdown(el, opts, getValue(), onSelect);
+    };
+    el.addEventListener('click', open);
+    el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') open(e);
+    });
 }
 
 function subjectIdByName(name) {
     const match = (taxonomy.subjects || []).find(s => s.name === name);
     return match ? match.id : null;
-}
-
-function mountEditableMetaTags(card, question) {
-    const difficultyEl = card.querySelector('.question-difficulty-badge');
-    if (difficultyEl) {
-        const select = document.createElement('select');
-        const diffClass = DIFFICULTY_CLASSES[question.difficulty] || DIFFICULTY_CLASSES.medium;
-        select.className = 'question-difficulty-badge badge badge-select ' + diffClass;
-        select.title = 'Change difficulty';
-        select.setAttribute('aria-label', 'Difficulty');
-        fillSelectOptions(select, [
-            { value: 'easy', label: DIFFICULTY_LABELS.easy },
-            { value: 'medium', label: DIFFICULTY_LABELS.medium },
-            { value: 'hard', label: DIFFICULTY_LABELS.hard }
-        ], question.difficulty || 'medium');
-        select.addEventListener('change', async () => {
-            const prev = question.difficulty;
-            const next = select.value;
-            select.className = 'question-difficulty-badge badge badge-select ' + (DIFFICULTY_CLASSES[next] || DIFFICULTY_CLASSES.medium);
-            fitBadgeSelectWidth(select);
-            const ok = await persistQuestionMeta(question, { difficulty: next });
-            if (!ok) {
-                select.value = prev || 'medium';
-                select.className = 'question-difficulty-badge badge badge-select ' + (DIFFICULTY_CLASSES[prev] || DIFFICULTY_CLASSES.medium);
-                fitBadgeSelectWidth(select);
-            }
-        });
-        difficultyEl.replaceWith(select);
-    }
-
-    const subjectEl = card.querySelector('.question-subject-tag');
-    const topicTagsEl = card.querySelector('.question-topic-tags');
-    let topicSelect = null;
-
-    function rebuildTopicOptions(subjectName, selectedTopic) {
-        if (!topicSelect) return;
-        const sid = subjectIdByName(subjectName);
-        const topics = topicsForSubject(taxonomy.topics, sid).map(t => t.name);
-        fillSelectOptions(topicSelect, topics, selectedTopic || '', 'Topic');
-        topicSelect.disabled = !subjectName || topics.length === 0;
-    }
-
-    if (subjectEl) {
-        const select = document.createElement('select');
-        select.className = 'question-subject-tag badge badge-select badge-neutral';
-        select.title = 'Change subject';
-        select.setAttribute('aria-label', 'Subject');
-        const subjectNames = (taxonomy.subjects || []).map(s => s.name);
-        const currentSubject = (question.subject || '').trim();
-        fillSelectOptions(select, subjectNames, currentSubject, 'Subject');
-        select.addEventListener('change', async () => {
-            const prevSubject = question.subject || '';
-            const prevTopics = Array.isArray(question.topics) ? question.topics.slice() : [];
-            const nextSubject = select.value;
-            const sid = subjectIdByName(nextSubject);
-            const allowed = new Set(topicsForSubject(taxonomy.topics, sid).map(t => t.name));
-            const kept = (prevTopics || []).filter(t => allowed.has(t));
-            const nextTopics = kept.length ? kept : null;
-            fitBadgeSelectWidth(select);
-            rebuildTopicOptions(nextSubject, nextTopics && nextTopics[0] ? nextTopics[0] : '');
-            const ok = await persistQuestionMeta(question, {
-                subject: nextSubject || null,
-                topics: nextTopics
-            });
-            if (!ok) {
-                select.value = prevSubject;
-                fitBadgeSelectWidth(select);
-                rebuildTopicOptions(prevSubject, prevTopics[0] || '');
-                question.subject = prevSubject;
-                question.topics = prevTopics;
-            }
-        });
-        subjectEl.replaceWith(select);
-    }
-
-    if (topicTagsEl) {
-        topicTagsEl.innerHTML = '';
-        topicSelect = document.createElement('select');
-        topicSelect.className = 'badge badge-select badge-topic';
-        topicSelect.title = 'Change topic';
-        topicSelect.setAttribute('aria-label', 'Topic');
-        const currentTopics = Array.isArray(question.topics) ? question.topics : [];
-        const currentTopic = (currentTopics[0] || '').toString().trim();
-        rebuildTopicOptions((question.subject || '').trim(), currentTopic);
-        topicSelect.addEventListener('change', async () => {
-            const prevTopics = Array.isArray(question.topics) ? question.topics.slice() : [];
-            const next = topicSelect.value;
-            const nextTopics = next ? [next] : null;
-            fitBadgeSelectWidth(topicSelect);
-            const ok = await persistQuestionMeta(question, { topics: nextTopics });
-            if (!ok) {
-                topicSelect.value = (prevTopics[0] || '').toString();
-                fitBadgeSelectWidth(topicSelect);
-            }
-        });
-        topicTagsEl.appendChild(topicSelect);
-    }
 }
 
 function createOptionExpInput(row, initialValue) {
@@ -259,7 +176,95 @@ export function renderQuestionCard(question, opts, ctx) {
             headingTag.className = 'question-heading-tag badge badge-heading';
         }
     }
-    mountEditableMetaTags(card, question);
+    const difficultyBadge = card.querySelector('.question-difficulty-badge');
+    function paintDifficulty() {
+        const key = question.difficulty || 'medium';
+        difficultyBadge.textContent = DIFFICULTY_LABELS[key] || key;
+        difficultyBadge.className = 'question-difficulty-badge badge meta-badge ' + (DIFFICULTY_CLASSES[key] || DIFFICULTY_CLASSES.medium);
+    }
+    paintDifficulty();
+
+    const subjectTag = card.querySelector('.question-subject-tag');
+    function paintSubject() {
+        if (!subjectTag) return;
+        const sub = (question.subject || '').trim();
+        subjectTag.classList.remove('hidden');
+        subjectTag.textContent = sub || 'Subject';
+        subjectTag.className = 'question-subject-tag badge badge-neutral meta-badge' + (sub ? '' : ' meta-badge--empty');
+    }
+    paintSubject();
+
+    const topicTagsEl = card.querySelector('.question-topic-tags');
+    let topicBadge = null;
+    function paintTopic() {
+        if (!topicTagsEl) return;
+        const topics = Array.isArray(question.topics) ? question.topics : [];
+        const primary = (topics[0] || '').toString().trim();
+        if (!topicBadge) {
+            topicBadge = document.createElement('span');
+            topicTagsEl.appendChild(topicBadge);
+            wireMetaBadge(
+                topicBadge,
+                () => {
+                    const sid = subjectIdByName((question.subject || '').trim());
+                    const list = topicsForSubject(taxonomy.topics, sid);
+                    return list.map(t => ({ value: t.name, label: t.name }));
+                },
+                () => ((Array.isArray(question.topics) && question.topics[0]) || '').toString().trim(),
+                async (value) => {
+                    if (!supabase) { alert('Supabase not configured.'); return; }
+                    const nextTopics = value ? [value] : null;
+                    const { error } = await supabase.from('questions').update({ topics: nextTopics }).eq('id', question.id);
+                    if (error) { alert('Failed to update topic: ' + error.message); return; }
+                    question.topics = nextTopics;
+                    paintTopic();
+                }
+            );
+        }
+        topicBadge.className = 'badge badge-topic meta-badge' + (primary ? '' : ' meta-badge--empty');
+        topicBadge.textContent = primary || 'Topic';
+        topicBadge.classList.toggle('hidden', !(question.subject || '').trim() && !primary);
+    }
+    paintTopic();
+
+    wireMetaBadge(
+        difficultyBadge,
+        () => [
+            { value: 'easy', label: DIFFICULTY_LABELS.easy },
+            { value: 'medium', label: DIFFICULTY_LABELS.medium },
+            { value: 'hard', label: DIFFICULTY_LABELS.hard }
+        ],
+        () => question.difficulty || 'medium',
+        async (value) => {
+            if (!supabase) { alert('Supabase not configured.'); return; }
+            const { error } = await supabase.from('questions').update({ difficulty: value }).eq('id', question.id);
+            if (error) { alert('Failed to update level: ' + error.message); return; }
+            question.difficulty = value;
+            paintDifficulty();
+        }
+    );
+
+    wireMetaBadge(
+        subjectTag,
+        () => (taxonomy.subjects || []).map(s => ({ value: s.name, label: s.name })),
+        () => (question.subject || '').trim(),
+        async (value) => {
+            if (!supabase) { alert('Supabase not configured.'); return; }
+            const sid = subjectIdByName(value);
+            const allowed = topicsForSubject(taxonomy.topics, sid).map(t => t.name);
+            const currentTopic = (Array.isArray(question.topics) && question.topics[0]) || '';
+            const nextTopics = currentTopic && allowed.includes(currentTopic) ? [currentTopic] : null;
+            const { error } = await supabase
+                .from('questions')
+                .update({ subject: value || null, topics: nextTopics })
+                .eq('id', question.id);
+            if (error) { alert('Failed to update subject: ' + error.message); return; }
+            question.subject = value || null;
+            question.topics = nextTopics;
+            paintSubject();
+            paintTopic();
+        }
+    );
     const stemEl = card.querySelector('.question-stem');
     stemEl.classList.add('rendered-markdown');
     stemEl.innerHTML = renderFormattedText(question.stem || '');
