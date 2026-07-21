@@ -80,21 +80,18 @@ A. Raja of Vizianagaram *
 B. Nizam of Hyderabad
 C. Polygar of Tamil Nadu
 D. Dewan Velu Thampi of Travancore
-[O5] None of the above/More than one of the above
 
 853: Birsa was captured, while asleep, on :
 A. 1 February, 1900 *
 B. 2 February, 1900
 C. 3 February, 1900
 D. 4 February, 1900
-[O5] None of the above/More than one of the above
 
 864: The author of 'Udwant Prakash' is
 A. Mauli Kavi *
 B. Bodhraj
 C. Paramala
 D. Vidyapati
-[O5] None of the above/More than one of the above
 
 889: Who composed Ananda Math?
 A. Rabindranath Tagore

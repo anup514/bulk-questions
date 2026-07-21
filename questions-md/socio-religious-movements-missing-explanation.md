@@ -256,4 +256,3 @@ A. Dayananda Saraswati
 B. Swami Vivekananda *
 C. Mahatma Gandhi
 D. Raja Rammohan Roy
-[O5] None of the above/More than one of the above

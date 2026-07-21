@@ -3,7 +3,7 @@
  * insert them into Supabase, reporting progress/errors to the UI.
  */
 import { supabase } from '../../lib/supabase.js';
-import { parseBulkRawText, parseFlashcardRawText } from '../../parsers/bulk.js';
+import { parseBulkRawText, parseFlashcardRawText, parseExplanationsRawText } from '../../parsers/bulk.js';
 import { getBulkEditorText, getEditor } from './editor.js';
 import { escapeHtml } from './toolbar.js';
 
@@ -20,7 +20,12 @@ export async function saveBulkQuestions() {
     const questions = parseBulkRawText(raw);
     const flashcards = parseFlashcardRawText(raw);
     if (!questions.length && !flashcards.length) {
-        showBulkImportMessage('No valid content found. Use MCQ tags ([Q]…) and/or flashcard tags ([F]…[B]…).', true);
+        const explanations = parseExplanationsRawText(raw);
+        if (explanations.length) {
+            await saveBulkExplanations(explanations);
+            return;
+        }
+        showBulkImportMessage('No valid content found. Use MCQ tags ([Q]…), flashcard tags ([F]…[B]…), or an explanations block (**index** with [O1]…[O4]).', true);
         return;
     }
     if (!supabase) { showBulkImportMessage('Supabase not configured. Add js/config.js.', true); return; }
@@ -112,6 +117,75 @@ export async function saveBulkQuestions() {
     const editor = getEditor();
     if ((okMcq + okFlash) > 0 && editor) {
         editor.commands.setContent('');
+    }
+}
+
+/**
+ * Updates explanations on existing options for questions matched by index.
+ * `entries` come from parseExplanationsRawText: [{ index, options: [{ letter, explanation }] }].
+ * Options map O1->A … O4->D; only the provided options are touched.
+ */
+export async function saveBulkExplanations(entries) {
+    if (!supabase) { showBulkImportMessage('Supabase not configured. Add js/config.js.', true); return; }
+    const indices = entries.map((e) => e.index);
+    const btn = document.getElementById('bulk-import-btn');
+    if (btn) btn.disabled = true;
+    let updated = 0;
+    const problems = [];
+    try {
+        showBulkImportMessage('Updating explanations for ' + entries.length + ' question(s)...', false);
+
+        const { data: rows, error: fetchErr } = await supabase
+            .from('questions')
+            .select('index, options(id, option_letter)')
+            .in('index', indices);
+        if (fetchErr) {
+            showBulkImportMessage('Could not read questions: ' + (fetchErr.message || JSON.stringify(fetchErr)), true);
+            return;
+        }
+
+        const byIndex = new Map();
+        for (const row of (rows || [])) {
+            const letterToId = {};
+            for (const o of (row.options || [])) letterToId[o.option_letter] = o.id;
+            byIndex.set(row.index, letterToId);
+        }
+
+        for (const entry of entries) {
+            const letterToId = byIndex.get(entry.index);
+            if (!letterToId) {
+                problems.push('index ' + entry.index + ': not found in database');
+                continue;
+            }
+            for (const opt of entry.options) {
+                const optId = letterToId[opt.letter];
+                if (!optId) {
+                    problems.push('index ' + entry.index + ' option ' + opt.letter + ': missing in database');
+                    continue;
+                }
+                const { error: updErr } = await supabase
+                    .from('options')
+                    .update({ explanation: opt.explanation })
+                    .eq('id', optId);
+                if (updErr) {
+                    problems.push('index ' + entry.index + ' option ' + opt.letter + ': ' + (updErr.message || JSON.stringify(updErr)));
+                } else {
+                    updated++;
+                }
+            }
+        }
+    } catch (e) {
+        problems.push((e && (e.message || String(e))) || 'Unknown error');
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+
+    if (problems.length) {
+        showBulkImportMessage('Updated ' + updated + ' explanation(s), ' + problems.length + ' skipped/failed. ' + problems[0], true);
+    } else {
+        showBulkImportMessage('Updated ' + updated + ' explanation(s).', false);
+        const editor = getEditor();
+        if (editor) editor.commands.setContent('');
     }
 }
 

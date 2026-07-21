@@ -1208,7 +1208,6 @@ A. 1, 3 and 4 only *
 B. 1, 2 and 4 only
 C. 1, 2, 3 and 4
 D. 1 and 2 only
-[O5] None of the above/More than one of the above
 
 657: Who founded Servants of India Society?
 A. Annie Besant
@@ -2567,147 +2566,126 @@ A. 1897 *
 B. 1905
 C. 1907
 D. 1912
-[O5] None of the above / More than one of the above
 
 845: Who invited Gandhiji to Champaran?
 A. Rajendra Prasad
 B. Raj Kumar Shukla *
 C. Mazharul Huq
 D. Krishna Sahay
-[O5] None of the above/More than one of the above
 
 846: After Independence, in which year were the Indian States reorganized on the linguistic basis?
 A. 1947
 B. 1951
 C. 1956 *
 D. 2000
-[O5] None of the above/More than one of the above
 
 847: Bihar as an Indian State was formed in
 A. 1911
 B. 1912
 C. 1936 *
 D. 2000
-[O5] None of the above/More than one of the above
 
 848: Who among the following did not rebel against the British East India Company's control over them?
 A. Raja of Vizianagaram *
 B. Nizam of Hyderabad
 C. Polygar of Tamil Nadu
 D. Dewan Velu Thampi of Travancore
-[O5] None of the above/More than one of the above
 
 849: Rajani Palme Dutt said, "They both fought and collaborated with imperialism." Which political grouping was he referring to?
 A. The Indian National Congress *
 B. The Communist Party of India
 C. The Swaraj Party
 D. Hindustan Socialist Republican Association
-[O5] None of the above/More than one of the above
 
 850: Bal Gangadhar Tilak came to be known as 'Lokmanya Tilak' when
 A. he became a popular teacher
 B. he started a popular newspaper
 C. the government accused him in the Rand Murder Case *
 D. he started the Shivaji and Ganpati festivals
-[O5] None of the above/More than one of the above
 
 851: How old was Bhagat Singh when he threw a bomb in the assembly in protest against the government?
 A. 21 years *
 B. A little more than 21 years
 C. 25 years
 D. A little more than 25 years
-[O5] None of the above/More than one of the above
 
 852: The elected Government of Bihar resigned in February 1938 for which reason?
 A. The participation of India in war
 B. Satyagraha against the British at the call of Gandhi
 C. High taxes being imposed by the British
 D. For the release of political prisoners
-[O5] None of the above/More than one of the above *
 
 853: Birsa was captured, while asleep, on :
 A. 1 February, 1900 *
 B. 2 February, 1900
 C. 3 February, 1900
 D. 4 February, 1900
-[O5] None of the above/More than one of the above
 
 854: "The Muslims, if contented and satisfied, would become the greatest bulwark of British power in India". Who wrote it?
 A. Herbert Risley
 B. Lord Lytton
 C. W.W.Hunter *
 D. H.N.Brailsford
-[O5] None of the above/More than one of the above
 
 855: "In my belief, Congress is to be tottering to its fall and one of my great ambitions while in India is to assist it to a peaceful demise." Who wrote it?
 A. Lord Lytton
 B. Lord Dufferin
 C. Lord Curzon *
 D. Lord Minto
-[O5] None of the above/More than one of the above
 
 856: Who became champion of socialism and wanted to overthrow of British rule, Princely states, Landlordism and Capitalism in 1933?
 A. Rajendra Prasad
 B. Jawaharlal Nehru *
 C. Bhulabhai Desai
 D. Sardar Patel
-[O5] None of the above/More than one of the above
 
 857: Who joined Subhas Chandra Bose to found All India Forward Bloc and actively associated with the INA movement?
 A. Jai Prakash Narayan
 B. Baikunth Shukla
 C. Sheel Bhadra Yajee *
 D. Ram Narain Prasad
-[O5] None of the above/More than one of the above
 
 858: Which journal was not associated with the revolutionary activities?
 A. Sandhya *
 B. Yugantar
 C. Ghadr
 D. Young India
-[O5] None of the above/More than one of the above
 
 859: First Indian elected to the British House of Commons was Dadabhai Naoroji who contested on the ticket of:
 A. Liberal Party *
 B. Labour Party
 C. Conservative Party
 D. Communist Party
-[O5] None of the above/More than one of the above
 
 860: The Chittagong Armoury Raid had been planned by
 A. Surya Sen *
 B. Chandan Dutta
 C. Vidhan Ghosh
 D. Jatin Das
-[O5] None of the above/More than one of the above
 
 861: A pleader of Bihar who left his lucrative practice during Non-Cooperation Movement was:
 A. Jai Prakash Narayan
 B. Rajendra Prasad *
 C. Sahajanand Saraswati
 D. Raj Kumar Shukla
-[O5] None of the above/More than one of the above
 
 862: Who organised the "Khudai Khidmatgar" in 1929?
 A. Abdul Gaffar Khan *
 B. Ali Brothers
 C. Ansari Brothers
 D. Maulana Abul Kalam Azad
-[O5] None of the above/More than one of the above
 
 863: Which among the following viceroy period the title of 'Rai Bahadur' and 'Khan Bahadur' were began to conferred to Indian?
 A. Lord Ripon
 B. Lord Lytton *
 C. Lord Meyo
 D. Lord Dufferin
-[O5] None of the above/More than one of the above
 
 864: The author of 'Udwant Prakash' is
 A. Mauli Kavi *
 B. Bodhraj
 C. Paramala
 D. Vidyapati
-[O5] None of the above/More than one of the above
 
 865: The British empire is rotten to the core, corrupt in every direction and tyrannical and mean. This statement was made by
 A. Sister Nivedita *
@@ -2909,35 +2887,30 @@ A. Sakharam Ganesh Deuskar *
 B. Rajendra Prasad
 C. Nivaran Chandra
 D. Murali Mohan Prasad
-[O5] None of the above/More than one of the above
 
 908: Who was the editor of Searchlight newspaper in Bihar?
 A. Abdul Bari
 B. Lambodar Mukherjee
 C. Murali Mohan Prasad *
 D. Ramananda Chatterjee
-[O5] None of the above/More than one of the above
 
 909: When was Bihar established?
 A. 1911
 B. 1912 *
 C. 1913
 D. 1914
-[O5] None of the above/More than one of the above
 
 910: In which of the following colleges, Gandhiji had studied?
 A. Samaldas College, Bhavnagar *
 B. Dharmendrasinhji College, Rajkot
 C. Gujarat College, Ahmedabad
 D. Bahauddin College, Junagadh
-[O5] None of the above/More than one of the above
 
 911: Who is the author of the popular song, Sarfaroshi Ki Tamanna Ab Hamare Dil Mein Hai?
 A. Surya Sen
 B. Chandra Shekhar Azad
 C. Sardar Bhagat Singh
 D. Ram Prasad Bismil
-[O5] None of the above/More than one of the above *
 
 912: 'The Rise and Growth of Economic Nationalism in India' was written by
 A. Partha Sarthi Gupta
@@ -2956,7 +2929,6 @@ A. Dayananda Saraswati
 B. Swami Vivekananda *
 C. Mahatma Gandhi
 D. Raja Rammohan Roy
-[O5] None of the above/More than one of the above
 
 915: 'Indian Nationalism in the middle of the 19th century was in Embryonic stage'. Who among the following historians accepted this view?
 A. Dr. R. C. Majumdar and Dr. S. N. Sen *
@@ -3021,14 +2993,12 @@ A. Non-Cooperation Movement
 B. Civil Disobedience Movement
 C. Quit India Movement *
 D. Champaran Satyagraha
-[O5] None of the above/More than one of the above
 
 925: Dr. Rajendra Prasad was elected the Chairman of the Constituent Assembly in
 A. October 1946 AD
 B. November 1946 AD
 C. December 1946 AD *
 D. September 1946 AD
-[O5] None of the above/More than one of the above
 
 926: Mahatma Gandhi was profoundly influenced by the writings of
 A. Bernard Shaw
