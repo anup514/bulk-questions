@@ -1,2 +1,5 @@
 # Supabase config with secrets (copy from js/config.example.js)
 js/config.js
+
+# Scratch input for the explanation importer
+tools/explanations_input.md
