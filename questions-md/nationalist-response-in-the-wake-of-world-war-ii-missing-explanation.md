@@ -1,3 +1,23 @@
+407: Read the following events connected with Indian freedom struggle and find the correct chronological order of the events from the codes given below:
+1. Muslim Deliverance Day
+2. Direct Action Day
+3. Resignation of Congress Ministries
+4. Individual Satyagraha
+A. 3, 1, 4, 2 *
+B. 1, 2, 3, 4
+C. 4, 3, 2, 1
+D. 1, 3, 2, 4
+
+413: Arrange the following in the chronological order and the select the correct answer from the codes given below:
+1. The August offer
+2. The Cabinet Mission Plan
+3. The Cripps Mission Plan
+4. The Wavell Plan
+A. 1, 2, 4, 3
+B. 4, 3, 2, 1
+C. 1, 3, 4, 2 *
+D. 3, 4, 1, 2
+
 417: Consider the following statements and select the correct answer from the codes given below:
 Assertion (A): Lord Linlithgow described the August Movement of 1942 as the most serious rebellion since Sepoy Muting.
 Reason (R): There was massive upsurge of the peasantry in certain areas.
@@ -12,6 +32,14 @@ Reason (R): The Cripps Mission consisted solely of Whites.
 A. Both A and R are true and R is the correct explanation of A.
 B. Both A and R are true, but R is not a correct explanation of A. *
 C. A is true, but R is false.
+D. A is false, but R is true.
+
+423: Consider the following statements and select the correct answer from the codes given below:
+Assertion (A): According to the Wavell Plan, the number of Hindu and Muslim members in the Executive Council were to be equal.
+Reason (R): Wavell thought that this arrangement would have avoided the partition of India.
+A. Both A and R are individually true and R is the correct explanation of A.
+B. Both A and R are individually true, but R is not the correct explanation of A.
+C. A is true, but R is false. *
 D. A is false, but R is true.
 
 424: Consider the following statements and select the correct answer from the codes given below:

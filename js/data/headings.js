@@ -21,9 +21,7 @@ export const HEADING_ORDER = [
     'Simon Commission & the Nehru Report',
     'Civil Disobedience Movement & Round Table Conference',
     'Debates on the Future Strategy after Civil Disobedience Movement',
-    'Congress Rule in the Provinces',
     'Nationalist Response in the Wake of World War II',
     'Quit India Movement, Demand for Pakistan & the INA',
-    'Post-War National Scenario',
     'Independence with Partition',
 ];

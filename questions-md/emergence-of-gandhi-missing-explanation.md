@@ -182,7 +182,6 @@ A. Samaldas College, Bhavnagar *
 B. Dharmendrasinhji College, Rajkot
 C. Gujarat College, Ahmedabad
 D. Bahauddin College, Junagadh
-[O5] None of the above/More than one of the above
 
 921: Which among the following is associated with "Songs from Prison", a translation of ancient Indian religious lyrics in English?
 A. Bal Gangadhar Tilak

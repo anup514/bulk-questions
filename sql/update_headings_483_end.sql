@@ -63,7 +63,7 @@ where "index" in (489,495,496,498,517,532,533,546,562,582,591,593,620,670,672,68
 
 -- 15. Emergence of Swarajists, Socialist Ideas, Revolutionary Activities & Other New Forces
 update public.questions set heading = 'Emergence of Swarajists, Socialist Ideas, Revolutionary Activities & Other New Forces'
-where "index" in (508,515,518,520,521,537,540,541,548,558,559,563,569,585,586,587,589,590,613,625,639,641,704,709,779,783,784,787,789,792,799,802,807,833,843,849,851,856,860,869,876,891,911);
+where "index" in (508,515,518,520,521,530,537,540,541,548,558,559,563,569,585,586,587,589,590,613,625,639,641,704,709,779,783,784,787,789,792,799,802,807,833,843,849,851,856,860,867,869,876,891,911);
 
 -- 16. Simon Commission & the Nehru Report
 update public.questions set heading = 'Simon Commission & the Nehru Report'
@@ -75,26 +75,18 @@ where "index" in (483,487,497,499,500,503,514,536,543,547,551,555,566,571,572,57
 
 -- 18. Debates on the Future Strategy after Civil Disobedience Movement
 update public.questions set heading = 'Debates on the Future Strategy after Civil Disobedience Movement'
-where "index" in (693,695,696,697,705,782,810,830,870,936);
+where "index" in (693,695,696,697,705,782,810,830,852,870,936);
 
--- 19. Congress Rule in the Provinces
-update public.questions set heading = 'Congress Rule in the Provinces'
-where "index" in (577,852,867);
-
--- 20. Nationalist Response in the Wake of World War II
+-- 19. Nationalist Response in the Wake of World War II
 update public.questions set heading = 'Nationalist Response in the Wake of World War II'
 where "index" in (568,578,895);
 
--- 21. Quit India Movement, Demand for Pakistan & the INA
+-- 20. Quit India Movement, Demand for Pakistan & the INA
 update public.questions set heading = 'Quit India Movement, Demand for Pakistan & the INA'
-where "index" in (484,485,486,488,490,502,525,542,553,557,573,579,595,701,711,857,866,878,904,924);
+where "index" in (484,485,486,488,490,493,501,502,525,542,553,557,573,577,579,595,664,701,711,720,800,857,866,878,879,904,924);
 
--- 22. Post-War National Scenario
-update public.questions set heading = 'Post-War National Scenario'
-where "index" in (493,501,530,664,720,794,795,800,871,877,879,925,934);
-
--- 23. Independence with Partition
+-- 21. Independence with Partition
 update public.questions set heading = 'Independence with Partition'
-where "index" in (712,797,809,828,846,875,890,906,935,937);
+where "index" in (712,794,795,797,809,828,846,871,875,877,890,906,925,934,935,937);
 
 commit;

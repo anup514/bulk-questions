@@ -80,6 +80,12 @@ B. Vallabhbhai Patel *
 C. Rajendra Prasad
 D. Kalyanji Mehta
 
+530: Who among the following were the founders of the "Hind Mazdoor Sabha" established in 1948?
+A. B Krishna Pillai, E.M.S. Namboodiripad and K.C George
+B. Jayaprakash Narayan, DeenDayal Upadhyay and M.N. Roy
+C. C P. Ramaswamy Iyer, K. Kamaraj and Veeresalingam Pantulu
+D. Ashok Mehta, T.S. Ramanujam and G.G. Mehta *
+
 537: Statement I: The Communists left the All India Trade Union Congress in 1931.
 Statement II: By 1928, the Communists were no longer working with the mainstream national movement.
 Codes:
@@ -358,6 +364,12 @@ A. Surya Sen *
 B. Chandan Dutta
 C. Vidhan Ghosh
 D. Jatin Das
+
+867: Who authored the book, Planned Economy for India?
+A. M.Visvesvaraya *
+B. J.R.D.Tata
+C. G.D.Birla
+D. Pattabhi Sitarayamayy
 
 869: In which district of Madhya Pradesh was Chandrashekhar Azad born?
 A. Khargone

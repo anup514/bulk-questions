@@ -1,8 +1,24 @@
+415: Put the following events in chronological order and choose your answer with the help of given codes:
+A. Formation of an interim government.
+B. The arrival of the Cabinet Mission.
+C. Muslim League Launches Direct Action.
+D. Jinnah's Wrecking of the Shimla Conference.
+A. B, D, C, A
+B. D, B, C, A *
+C. A, B, D, C
+D. D, B, A, C
+
 440: Who of the following had pleaded from the side of Indian National Army officers in their Red Fort trial?
 A. C. R. Das
 B. Motilal Nehru
 C. M. A. Jinnah
 D. Sir T.B. Sapru *
+
+467: Who among the following was not a member of the Cabinet Mission sent to India in 1946 AD?
+A. Ramsay MacDonald *
+B. A. V. Alexander
+C. Lord Pathick Lawrence
+D. Sir Stafford Cripps
 
 484: Aruna Asaf Ali was connected with which one of the following movements as a woman organiser of underground activity?
 A. Civil Disobedience Movement
@@ -33,6 +49,21 @@ A. Ram Manohar Lohia
 B. Jai Prakash Narayan
 C. Subhash Chandra Bose *
 D. Sardar Vallabhbhai Patel
+
+493: On which of the following fleet, the naval revolt of 1946 was started?
+A. I.N.S. Virat
+B. I.N.S. Crown
+C. I.N.S. Talwar *
+D. None of these
+
+501: Consider the following statements regarding the revolt of the Royal Indian Navy in 1946:
+1. The revolt was launched to protest against racial discrimination and unpalatable food.
+2. Lord Wavell the concurrent viceroy of India condemned the response of the Indian Army towards the revolt.
+Which of the statements given above is/are correct?
+A. 1 only *
+B. 2 only
+C. Both 1 and 2
+D. Neither 1 nor 2
 
 502: Consider the following statements in regard to the parallel government emerged during the Quit India Movement.
 1. The first such government emerged in Satara.
@@ -78,6 +109,15 @@ B. The Viceroy's Executive Council was expanded to include more Indians
 C. The Congress ministries resigned in seven provinces
 D. Cripps proposed an Indian Union with full Dominion Status once the Second World War was over
 
+577: Which of the following statements about the Unionist Party is/are correct?
+1. It was a political party representing the interests of landholders in Punjab.
+2. It was opposed to the idea of the partition of India as India and Pakistan.
+Select the correct answer using the code given below.
+A. 1 only
+B. 2 only
+C. Both 1 and 2 *
+D. Neither 1 nor 2
+
 579: Who launched secret radio during the Quit India Movement?
 A. Subhadra Kumari Chauhan
 B. Sucheta Kripalani
@@ -90,6 +130,12 @@ B. Quit India Movement *
 C. Individual Movement
 D. Civil Disobedience Movement
 
+664: Who was given the princely portfolio in the National Provisional Government?
+A. V.P. Menon
+B. Sardar Vallabhbhai Patel *
+C. Krishna Shahi
+D. C. Rajgopalachari
+
 701: Who among the following was the President of Indian National Congress continuously for six years?
 A. Jawaharlal Nehru
 B. Abul Kalam Azad *
@@ -101,6 +147,18 @@ A. Delhi Session
 B. Karachi Session
 C. Lahore Session *
 D. Lucknow Session
+
+720: The first Interim National Government was announced on
+A. 22nd August 1946
+B. 24th August 1946 *
+C. 23rd August 1946
+D. 25th August 1946
+
+800: Consider the following statement and identify with the help of the codes given below, the person who made the statement 'It would be quite impossible for a few hundred British to administer against the active opposition of the whole of the politically minded of the population
+A. Jawaharlal Nehru in April, 1947 in an address to Congressmen at Lucknow
+B. Clement Attlee January, 1947 in a private letter addressed to Ernest Bevin *
+C. Lord Mountbatten in December, 1946 in a note given to British Parliament
+D. Viceroy Wavell in January, 1946 in a letter to Secretary of State
 
 857: Who joined Subhas Chandra Bose to found All India Forward Bloc and actively associated with the INA movement?
 A. Jai Prakash Narayan
@@ -119,6 +177,12 @@ A. Japan
 B. Austria
 C. Germany *
 D. Malaysia
+
+879: Which political party formally accepted the Cabinet Mission Plan on 6th June, 1946, which had rejected the demand for a sovereign Pakistan?
+A. The Hindu Mahasabha
+B. The Congress
+C. The Muslim League *
+D. The Unionist Party
 
 904: Which politician in British India had opposed to a Pakistan that would mean "Muslim Raj here and Hindu Raj elsewhere"?
 A. Khan Abdul Ghaffar Khan

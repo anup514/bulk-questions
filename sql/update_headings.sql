@@ -76,26 +76,18 @@ where "index" in (386,394,403,416,419,420,425,464,466);
 
 -- 18. Debates on the Future Strategy after Civil Disobedience Movement
 update public.questions set heading = 'Debates on the Future Strategy after Civil Disobedience Movement'
-where "index" in (409);
+where "index" in (409,437,438);
 
--- 19. Congress Rule in the Provinces
-update public.questions set heading = 'Congress Rule in the Provinces'
-where "index" in (437,438);
-
--- 20. Nationalist Response in the Wake of World War II
+-- 19. Nationalist Response in the Wake of World War II
 update public.questions set heading = 'Nationalist Response in the Wake of World War II'
-where "index" in (417,421,424,472);
+where "index" in (407,413,417,421,423,424,472);
 
--- 21. Quit India Movement, Demand for Pakistan & the INA
+-- 20. Quit India Movement, Demand for Pakistan & the INA
 update public.questions set heading = 'Quit India Movement, Demand for Pakistan & the INA'
-where "index" in (387,388,391,396,397,398,400,440,470);
+where "index" in (387,388,391,396,397,398,400,415,440,467,470);
 
--- 22. Post-War National Scenario
-update public.questions set heading = 'Post-War National Scenario'
-where "index" in (392,407,413,415,423,467);
-
--- 23. Independence with Partition
+-- 21. Independence with Partition
 update public.questions set heading = 'Independence with Partition'
-where "index" in (399,404,426,427,439,447);
+where "index" in (392,399,404,426,427,439,447);
 
 commit;

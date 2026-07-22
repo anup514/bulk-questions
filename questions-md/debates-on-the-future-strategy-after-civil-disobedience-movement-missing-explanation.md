@@ -4,6 +4,27 @@ B. It comprises the Haripura (1938) and Tripura (1939) sessions.
 C. It has a chapter 'The Gandhi-Irwin Pact and after.
 D. It depicts the comprehensive history of the Peasant Movement in India. *
 
+437: Consider the following provinces of British India and identify those where the Indian National Congress did not form ministry in 1937?
+1. Central Provinces
+2. Orissa
+3. Bengal
+4. Punjab
+Select the correct answer from the code given below-
+A. 1 and 2
+B. 3 and 4 *
+C. 2 and 3
+D. 1 and 4
+
+438: Consider the following statements regarding elections of 1937?
+1. Muslim League could not win a single seat in North West Frontier Province (NWFP).
+2. Sikandar Hayat Khan of Unionist party won in Punjab.
+3. Bengal was won of Maulana Hamid of KrishakPraja Party.
+Select the correct answer using code given below:
+A. 1 and 3 only
+B. 3 only
+C. 1 and 2 only *
+D. 1, 2 and 3
+
 693: In which of the following sessions of the Indian National Congress, Subhash Chandra Bose had defeated Pattabhi Sitaramayya in the election of the Congress President?
 A. Haripura Session 1938
 B. Tripura Session 1939 *
@@ -57,6 +78,12 @@ A. Mahatma Gandhi
 B. Ram Manohar Lohia
 C. Rabindranath Tagore *
 D. Sardar Vallabhbhai Patel
+
+852: The elected Government of Bihar resigned in February 1938 for which reason?
+A. The participation of India in war
+B. Satyagraha against the British at the call of Gandhi
+C. High taxes being imposed by the British
+D. For the release of political prisoners *
 
 870: Who among the following is the author of the book 'The Indian Struggle, 1920–1934'?
 A. Maulana Abul Kalam

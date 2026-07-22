@@ -41,6 +41,18 @@ B. India ceased to be a dependency.
 C. The Crown was the source of authority till new Constitution was framed. *
 D. The Governor-General was the constitutional head of Indian Dominion.
 
+794: Who among the following was not a member of the Constituent Assembly?
+A. Sardar Vallabhbhai Patel
+B. Acharya JB Kriplani
+C. Lok Nayak Jayprakash *
+D. K M Munshi
+
+795: Who among the following had moved the objectives resolution which formed the basis of the Preamble of the Constitution of India in the Constituent Assembly on December 13, 1946?
+A. Dr B R Ambedkar
+B. Dr Rajendra Prasad
+C. Sardar Vallabhbhai Patel
+D. Pandit Jawaharlal Nehru *
+
 797: October 26, 1947 is an important date in the Indian history, because of
 A. Maharaja Hari Singh's signing on Instrument of Accession *
 B. ceasefire with Pakistan
@@ -65,6 +77,12 @@ B. 1951
 C. 1956 *
 D. 2000
 
+871: Who among the following are the two civil servants who assisted the Constituent Assembly in framing the Constitution of India?
+A. B.N. Rau and K.M. Munshi
+B. S.N. Mukherjee and Alladi Krishna swamy Aiyar
+C. B.N. Rau and S.N. Mukherjee *
+D. K.M. Munshi and Alladi Krishna swamy Aiyar
+
 875: Consider the following events:
 1. The first democratically elected communist party government formed in a State in India.
 2. India's then largest bank, 'Imperial Bank of India', was renamed 'State Bank of India'.
@@ -75,6 +93,16 @@ A. 4 - 1 - 2 - 3
 B. 3 - 2 - 1 - 4 *
 C. 4 - 2 - 1 - 3
 D. 3 - 1 - 2 - 4
+
+877: Which of the following statements relating to the historic Objectives Resolution, which was adopted by the Constituent Assembly, is/are correct?
+1. The Objectives Resolution inspired the shaping of the Constitution through all its subsequent stages.
+2. It was not just a resolution, but a declaration, a firm resolve and a pledge.
+3. It provided the underlying philosophy of our Constitution.
+Select the correct answer using the code given below.
+A. 1 and 2 only
+B. 1 only
+C. 1, 2 and 3 *
+D. 2 and 3 only
 
 890: Who among the following leaders was not a pioneer of Non-alignment movement?
 A. J.Nehru
@@ -87,6 +115,18 @@ A. 1948 *
 B. 1950
 C. 1949
 D. 1947
+
+925: Dr. Rajendra Prasad was elected the Chairman of the Constituent Assembly in
+A. October 1946 AD
+B. November 1946 AD
+C. December 1946 AD *
+D. September 1946 AD
+
+934: Who was the Provisional President of the Constituent Assembly before Dr. Rajendra Prasad took over?
+A. C. Rajagopalachari
+B. Dr. B.R. Ambedkar
+C. T.T. Krishnamachari
+D. Dr. Sachchidananda Sinha *
 
 935: Consider the following pairs: (Party - Its Leader)
 1. Bharatiya Jana Sangh — Dr. Shyama Prasad Mukherjee
