@@ -51,7 +51,11 @@ export function parseBulkRawText(text) {
                 if (tag === '02') tag = 'O2';
                 if (tag === '03') tag = 'O3';
                 if (tag === '04') tag = 'O4';
-                if (tag === 'END') break;
+                // Keep tag as END so the final flush does not overwrite the last section.
+                if (tag === 'END') {
+                    currentTag = 'END';
+                    break;
+                }
                 currentTag = tag;
                 currentContent = [match[2]];
             } else {
@@ -104,7 +108,11 @@ export function parseFlashcardRawText(text) {
             if (match) {
                 flush();
                 const tag = (match[1] || '').toUpperCase();
-                if (tag === 'END') break;
+                // Keep tag as END so the final flush does not overwrite the last section.
+                if (tag === 'END') {
+                    currentTag = 'END';
+                    break;
+                }
                 currentTag = tag;
                 currentContent = [match[2] || ''];
             } else {

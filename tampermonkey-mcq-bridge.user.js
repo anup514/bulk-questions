@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Selection-Based MCQ Bridge
 // @namespace    http://tampermonkey.net/
-// @version      9.4
-// @description  Syncs MCQ and flashcard payloads with HTML↔Markdown conversion and TipTap-safe paste
+// @version      9.5.2
+// @description  Syncs MCQ and flashcard payloads with HTML↔Markdown conversion and TipTap-safe paste; supports legacy and new SR MCQ add forms
 // @author       Gemini
 // @match        *://localhost/*
 // @match        *://127.0.0.1/*
@@ -394,33 +394,44 @@
             sel.removeAllRanges();
             sel.addRange(range);
 
+            let pasted = false;
+
             // 1) Try execCommand, which ProseMirror/Tiptap hooks into.
             try {
                 const ok = document.execCommand && document.execCommand('insertHTML', false, html);
-                if (ok) return;
+                if (ok) pasted = true;
             } catch (e) {
                 console.warn('execCommand insertHTML failed, trying ClipboardEvent', e);
             }
 
             // 2) Try synthetic ClipboardEvent-based paste.
-            try {
-                const dt = new DataTransfer();
-                dt.setData('text/html', html);
-                dt.setData('text/plain', html.replace(/<[^>]*>/g, ''));
-                const evt = new ClipboardEvent('paste', {
-                    bubbles: true,
-                    cancelable: true,
-                    clipboardData: dt,
-                });
-                const dispatched = editorEl.dispatchEvent(evt);
-                if (dispatched) return;
-            } catch (e) {
-                console.warn('ClipboardEvent paste failed, falling back to innerHTML', e);
+            // TipTap often preventDefault() on paste — dispatchEvent then returns false,
+            // which still means the paste was handled successfully.
+            if (!pasted) {
+                try {
+                    const dt = new DataTransfer();
+                    dt.setData('text/html', html);
+                    dt.setData('text/plain', html.replace(/<[^>]*>/g, ''));
+                    const evt = new ClipboardEvent('paste', {
+                        bubbles: true,
+                        cancelable: true,
+                        clipboardData: dt,
+                    });
+                    editorEl.dispatchEvent(evt);
+                    if (evt.defaultPrevented || (editorEl.textContent || '').trim()) pasted = true;
+                } catch (e) {
+                    console.warn('ClipboardEvent paste failed, falling back to innerHTML', e);
+                }
             }
 
             // 3) Absolute fallback.
-            editorEl.innerHTML = html;
+            if (!pasted) {
+                editorEl.innerHTML = html;
+            }
+
             editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+            editorEl.dispatchEvent(new Event('change', { bubbles: true }));
+            editorEl.blur();
         }
 
         // Set value on a React-controlled <select>.
@@ -564,9 +575,7 @@
             const clickTargets = [toggle, label, input].filter(Boolean);
 
             for (const target of clickTargets) {
-                target.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-                target.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
-                target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+                target.click();
                 if (input.checked === shouldBeActive) return true;
             }
 
@@ -652,45 +661,204 @@
             });
         }
 
-        const performPasteMcq = async (data) => {
-            // Paste into each editor sequentially with a delay between each one.
-            const editors = document.querySelectorAll('.tiptap.ProseMirror');
-            for (const editor of editors) {
-                const parentHTML = editor.closest('div').parentElement.innerHTML;
-                let content = "";
+        function findLegacyMcqSaveButton() {
+            return Array.from(document.querySelectorAll('input[type="submit"],button')).find(el => {
+                const cls = el.className || '';
+                return cls.includes('bg-[#0E766E]') &&
+                    cls.includes('text-white') &&
+                    cls.includes('px-6') &&
+                    cls.includes('py-2') &&
+                    cls.includes('rounded-md') &&
+                    cls.includes('font-semibold') &&
+                    (el.value === 'Save MCQ ' || (el.textContent || '').includes('Save MCQ'));
+            });
+        }
 
-                if (parentHTML.includes('Question')) content = data.question;
-                else if (parentHTML.includes('Option 1')) content = data.options[0];
-                else if (parentHTML.includes('Explanation 1')) content = data.explanations[0];
-                else if (parentHTML.includes('Option 2')) content = data.options[1];
-                else if (parentHTML.includes('Explanation 2')) content = data.explanations[1];
-                else if (parentHTML.includes('Option 3')) content = data.options[2];
-                else if (parentHTML.includes('Explanation 3')) content = data.explanations[2];
-                else if (parentHTML.includes('Option 4')) content = data.options[3];
-                else if (parentHTML.includes('Explanation 4')) content = data.explanations[3];
+        function findNewMcqSaveButton() {
+            return Array.from(document.querySelectorAll('button,input[type="submit"]')).find(el => {
+                const cls = el.className || '';
+                return cls.includes('bg-green-600') &&
+                    cls.includes('hover:bg-green-700') &&
+                    cls.includes('px-8') &&
+                    cls.includes('py-3') &&
+                    cls.includes('text-white') &&
+                    cls.includes('font-semibold') &&
+                    cls.includes('rounded-lg');
+            });
+        }
+
+        function hasTaxonomyDropdowns() {
+            return Array.from(document.querySelectorAll('select')).some(select => {
+                const label = select.closest('div')?.querySelector('label');
+                const text = (label?.innerText || label?.textContent || '').toLowerCase();
+                return text.includes('level') || text.includes('subject') || text.includes('topic');
+            });
+        }
+
+        function isNewMcqAnswerRadio(el) {
+            return el && el.matches('input[type="radio"]')
+                && hasAllClasses(el, ['mt-2', 'w-4', 'h-4', 'text-teal-600']);
+        }
+
+        function findNewMcqAnswerRadios() {
+            const radios = sortByDocumentPosition(
+                Array.from(document.querySelectorAll('input[type="radio"]')).filter(isNewMcqAnswerRadio)
+            );
+            return radios.length >= 4 ? radios.slice(0, 4) : null;
+        }
+
+        function pageLooksLikeNewMcqForm() {
+            if (!findNewMcqSaveButton()) return false;
+            if (!findNewMcqAnswerRadios()) return false;
+            if (hasTaxonomyDropdowns()) return false;
+            return true;
+        }
+
+        function pageLooksLikeLegacyMcqForm() {
+            if (findLegacyMcqSaveButton()) return true;
+            if (findMcqAnswerRows().length >= 4) return true;
+            if (Array.from(document.querySelectorAll('div')).filter(isSrAnswerToggle).length >= 4) return true;
+            return false;
+        }
+
+        function setReactRadioChecked(radio) {
+            if (!radio) return false;
+            const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'checked').set;
+            setter.call(radio, true);
+            const tracker = radio._valueTracker;
+            if (tracker) tracker.setValue('false');
+            radio.dispatchEvent(new Event('click', { bubbles: true }));
+            radio.dispatchEvent(new Event('input', { bubbles: true }));
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+            return !!radio.checked;
+        }
+
+        async function selectCorrectAnswerRadio(correctIndex) {
+            if (correctIndex < 0) return false;
+
+            for (let attempt = 0; attempt < 6; attempt++) {
+                const radios = findNewMcqAnswerRadios();
+                if (!radios || radios.length <= correctIndex) {
+                    await delay(350);
+                    continue;
+                }
+
+                const radio = radios[correctIndex];
+                if (radio.checked) return true;
+
+                const label = (radio.id
+                    ? document.querySelector('label[for="' + CSS.escape(radio.id) + '"]')
+                    : null)
+                    || radio.closest('label');
+                const clickTargets = [label, radio].filter(Boolean);
+
+                for (const target of clickTargets) {
+                    target.click();
+                    await delay(50);
+                    if (radio.checked) return true;
+                }
+
+                if (setReactRadioChecked(radio)) return true;
+                if (activateAnswerControl(radio, true)) return true;
+
+                await delay(350);
+            }
+            return false;
+        }
+
+        function editorLabelContext(editorEl) {
+            let node = editorEl;
+            for (let depth = 0; depth < 6 && node; depth++) {
+                const label = node.querySelector && node.querySelector('label');
+                if (label) return (label.textContent || '').replace(/\s+/g, ' ').trim();
+                const prev = node.previousElementSibling;
+                if (prev) {
+                    if (prev.tagName === 'LABEL') return (prev.textContent || '').replace(/\s+/g, ' ').trim();
+                    const prevLabel = prev.querySelector && prev.querySelector('label');
+                    if (prevLabel) return (prevLabel.textContent || '').replace(/\s+/g, ' ').trim();
+                }
+                node = node.parentElement;
+            }
+            return '';
+        }
+
+        function contentForMcqEditorLabel(labelText, data) {
+            const t = (labelText || '').toLowerCase();
+            if (/^question\b/.test(t) || t === 'question') return data.question;
+            const opt = t.match(/option\s*([1-4])\b/);
+            if (opt) return data.options && data.options[Number(opt[1]) - 1];
+            const exp = t.match(/explanation\s*([1-4])\b/);
+            if (exp) return data.explanations && data.explanations[Number(exp[1]) - 1];
+            return '';
+        }
+
+        async function pasteMcqEditors(data) {
+            const editors = sortByDocumentPosition(
+                Array.from(document.querySelectorAll('.tiptap.ProseMirror'))
+            );
+
+            // New add-to-test page layout is fixed: Q, O1, E1, O2, E2, O3, E3, O4, E4.
+            // Prefer DOM order when we clearly have those 9 editors so label wrapping
+            // cannot mis-assign every field to "Question".
+            const orderedContents = [
+                data.question,
+                data.options && data.options[0], data.explanations && data.explanations[0],
+                data.options && data.options[1], data.explanations && data.explanations[1],
+                data.options && data.options[2], data.explanations && data.explanations[2],
+                data.options && data.options[3], data.explanations && data.explanations[3],
+            ];
+            const useOrder = pageLooksLikeNewMcqForm() && editors.length >= 9;
+
+            for (let i = 0; i < editors.length; i++) {
+                const editor = editors[i];
+                let content = '';
+                if (useOrder && i < orderedContents.length) {
+                    content = orderedContents[i] || '';
+                } else {
+                    content = contentForMcqEditorLabel(editorLabelContext(editor), data) || '';
+                    if (!content) {
+                        // Legacy fallback: parent HTML label sniff.
+                        const parent = editor.parentElement;
+                        const parentHTML = (parent && parent.parentElement)
+                            ? parent.parentElement.innerHTML
+                            : (parent ? parent.innerHTML : '');
+                        if (parentHTML.includes('Explanation 1')) content = data.explanations[0];
+                        else if (parentHTML.includes('Explanation 2')) content = data.explanations[1];
+                        else if (parentHTML.includes('Explanation 3')) content = data.explanations[2];
+                        else if (parentHTML.includes('Explanation 4')) content = data.explanations[3];
+                        else if (parentHTML.includes('Option 1')) content = data.options[0];
+                        else if (parentHTML.includes('Option 2')) content = data.options[1];
+                        else if (parentHTML.includes('Option 3')) content = data.options[2];
+                        else if (parentHTML.includes('Option 4')) content = data.options[3];
+                        else if (/\bQuestion\b/.test(parentHTML)) content = data.question;
+                    }
+                }
 
                 if (content) {
-                    const html = mdToHtml(content);
-                    pasteIntoEditor(editor, html);
-                    await delay(200);
+                    pasteIntoEditor(editor, mdToHtml(content));
+                    await delay(250);
                 }
             }
+        }
 
-            const setDropdown = (labelText, valueToSet) => {
-                const targetContainer = Array.from(document.querySelectorAll('div')).find(c =>
-                    c.querySelector('label')?.innerText.includes(labelText));
-                const select = targetContainer?.querySelector('select');
-                if (select && valueToSet) {
-                    const opt = Array.from(select.options).find(o =>
-                        o.text.trim().toLowerCase() === valueToSet.toLowerCase());
-                    if (opt) setReactSelect(select, opt.value);
-                }
-            };
+        const setMcqDropdown = (labelText, valueToSet) => {
+            const targetContainer = Array.from(document.querySelectorAll('div')).find(c =>
+                c.querySelector('label')?.innerText.includes(labelText));
+            const select = targetContainer?.querySelector('select');
+            if (select && valueToSet) {
+                const opt = Array.from(select.options).find(o =>
+                    o.text.trim().toLowerCase() === valueToSet.toLowerCase());
+                if (opt) setReactSelect(select, opt.value);
+            }
+        };
 
-            setDropdown('Level', data.level);
-            setDropdown('Subject', data.subject);
+        const performPasteMcqLegacy = async (data) => {
+            await pasteMcqEditors(data);
+
+            setMcqDropdown('Level', data.level);
+            setMcqDropdown('Subject', data.subject);
             await delay(500);
-            setDropdown('Topic', data.topic);
+            setMcqDropdown('Topic', data.topic);
 
             const correctIndex = data.correctOption ? ['A', 'B', 'C', 'D'].indexOf(data.correctOption.toUpperCase()) : -1;
             if (correctIndex < 0) {
@@ -703,18 +871,43 @@
             // newly-pasted content is submitted. Give React a brief moment to
             // flush state from the TipTap editors and dropdowns first.
             await delay(500);
-            const saveBtn = Array.from(document.querySelectorAll('input[type=\"submit\"],button'))
-                .find(el => {
-                    const cls = el.className || '';
-                    return cls.includes('bg-[#0E766E]') &&
-                           cls.includes('text-white') &&
-                           cls.includes('px-6') &&
-                           cls.includes('py-2') &&
-                           cls.includes('rounded-md') &&
-                           cls.includes('font-semibold') &&
-                           (el.value === 'Save MCQ ' || (el.textContent || '').includes('Save MCQ'));
-                });
+            const saveBtn = findLegacyMcqSaveButton();
             if (saveBtn) {
+                saveBtn.click();
+            }
+        };
+
+        const performPasteMcqNew = async (data) => {
+            await pasteMcqEditors(data);
+
+            const letter = (data.correctOption || '').toString().trim().toUpperCase();
+            let correctIndex = ['A', 'B', 'C', 'D'].indexOf(letter);
+            if (correctIndex < 0) {
+                const asNum = letter.replace(/^O/, '');
+                const n = parseInt(asNum, 10);
+                if (n >= 1 && n <= 4) correctIndex = n - 1;
+            }
+            if (correctIndex < 0) {
+                console.warn('[MCQ Bridge] No correct answer in payload — highlight the full question card on localhost and click Sync again.');
+                alert('MCQ Bridge: no correct answer in the synced payload. Fill/select it manually, then Save.');
+                return;
+            }
+            await delay(600);
+            const radioOk = await selectCorrectAnswerRadio(correctIndex);
+            if (!radioOk) {
+                alert('MCQ Bridge: could not select the correct-answer radio. Select it manually, then Save.');
+                return;
+            }
+
+            // Give TipTap/React time to flush editor + radio state before submit.
+            await delay(1000);
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
+            await delay(200);
+
+            const saveBtn = findNewMcqSaveButton();
+            if (saveBtn && !saveBtn.disabled) {
                 saveBtn.click();
             }
         };
@@ -746,7 +939,11 @@
         const routePayload = async (data) => {
             if (!data || !data.type) return;
             if (data.type === 'flashcard') return performPasteFlashcard(data);
-            if (data.type === 'mcq') return performPasteMcq(data);
+            if (data.type === 'mcq') {
+                if (pageLooksLikeNewMcqForm()) return performPasteMcqNew(data);
+                if (pageLooksLikeLegacyMcqForm()) return performPasteMcqLegacy(data);
+                alert('Received MCQ payload, but current page does not look like an MCQ form.');
+            }
         };
 
         const pBtn = document.createElement('button');

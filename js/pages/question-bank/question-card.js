@@ -524,7 +524,7 @@ export function renderQuestionCard(question, opts, ctx) {
         function parseTaggedExplanations(text) {
             const result = {};
             if (!text) return result;
-            const regex = /\[O([1-4]*)\]\s*([\s\S]*?)(?=\[O[1-4]*\]|\s*$)/g;
+            const regex = /\[E([1-4]*)\]\s*([\s\S]*?)(?=\[E[1-4]*\]|\s*$)/g;
             let m;
             while ((m = regex.exec(text)) !== null) {
                 const idx = parseInt(m[1], 10);
@@ -536,12 +536,12 @@ export function renderQuestionCard(question, opts, ctx) {
             return result;
         }
         const inputs = card.querySelectorAll('.option-exp-input');
-        // If any textarea contains [O1]...[O4] tags, split and distribute them
+        // If any textarea contains [E1]...[E4] tags, split and distribute them
         let taggedMap = null;
         inputs.forEach(ta => {
             if (taggedMap) return;
             const raw = (ta.value || '');
-            if (/\[O[1-4]\]/.test(raw)) {
+            if (/\[E[1-4]\]/.test(raw)) {
                 taggedMap = parseTaggedExplanations(raw);
             }
         });
