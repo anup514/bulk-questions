@@ -176,6 +176,14 @@ export function renderQuestionCard(question, opts, ctx) {
             headingTag.className = 'question-heading-tag badge badge-heading';
         }
     }
+    const examTag = card.querySelector('.question-exam-tag');
+    if (examTag) {
+        const exam = (question.exam || '').trim();
+        if (exam) {
+            examTag.textContent = exam;
+            examTag.className = 'question-exam-tag badge badge-exam';
+        }
+    }
     const difficultyBadge = card.querySelector('.question-difficulty-badge');
     function paintDifficulty() {
         const key = question.difficulty || 'medium';

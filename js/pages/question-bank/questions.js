@@ -3,18 +3,10 @@
  * cards + pagination, and supports bulk delete-all.
  */
 import { supabase } from '../../lib/supabase.js';
-import { HIDDEN_UNTIL_INDEX, PAGE_SIZE, questionBankState } from './state.js';
+import { PAGE_SIZE, questionBankState } from './state.js';
 import { renderQuestionCard } from './question-card.js';
 import { renderPagination } from './pagination.js';
 import { updateFeedCount } from './feed-count.js';
-
-/** Fetch size when loading all matching questions for explanation filtering. */
-const FETCH_PAGE_SIZE = 1000;
-/**
- * Max IDs per `.in()` call. Large UUID lists blow past PostgREST URL limits
- * and return 400 Bad Request.
- */
-const IN_FILTER_CHUNK = 100;
 
 function goToPage(page) {
     questionBankState.page = page;
@@ -23,21 +15,6 @@ function goToPage(page) {
 
 function refreshPagination() {
     renderPagination(goToPage);
-}
-
-/** Load options for many question IDs in URL-safe chunks. */
-async function fetchOptionsByQuestionIds(questionIds) {
-    const options = [];
-    for (let i = 0; i < questionIds.length; i += IN_FILTER_CHUNK) {
-        const chunk = questionIds.slice(i, i + IN_FILTER_CHUNK);
-        const { data, error } = await supabase
-            .from('options')
-            .select('question_id, explanation')
-            .in('question_id', chunk);
-        if (error) return { data: null, error };
-        options.push(...(data || []));
-    }
-    return { data: options, error: null };
 }
 
 export async function loadQuestions() {
@@ -64,7 +41,6 @@ export async function loadQuestions() {
         subject = selected ? (selected.getAttribute('data-name') || '').trim() : '';
     }
     const topic = document.getElementById('filter-topic').value.trim();
-    const heading = (document.getElementById('filter-heading') && document.getElementById('filter-heading').value) ? document.getElementById('filter-heading').value.trim() : '';
     const explanationFilter = document.getElementById('filter-explanation').value.trim();
     const search = (document.getElementById('search-questions') && document.getElementById('search-questions').value) ? document.getElementById('search-questions').value.trim() : '';
     const from = questionBankState.page * PAGE_SIZE;
@@ -74,11 +50,9 @@ export async function loadQuestions() {
     let qErr = null;
     let count = 0;
     const applyQuestionBaseFilters = (query) => {
-        if (HIDDEN_UNTIL_INDEX > 0) query = query.gt('index', HIDDEN_UNTIL_INDEX);
         if (level) query = query.eq('difficulty', level);
         if (subject) query = query.eq('subject', subject);
         if (topic) query = query.contains('topics', [topic]);
-        if (heading) query = query.eq('heading', heading);
         if (search) query = query.ilike('stem', '%' + search + '%');
         return query;
     };
@@ -92,33 +66,25 @@ export async function loadQuestions() {
         count = result.count || 0;
     } else {
         // Explanation-filter mode uses option-level explanation presence per question.
-        const allQuestions = [];
-        let fetchFrom = 0;
-        while (true) {
-            let pageQuery = supabase
-                .from('questions')
-                .select('id, index, stem, difficulty, subject, topics, heading')
-                .order('index', { ascending: true, nullsFirst: false })
-                .range(fetchFrom, fetchFrom + FETCH_PAGE_SIZE - 1);
-            pageQuery = applyQuestionBaseFilters(pageQuery);
-            const { data: pageRows, error: pageErr } = await pageQuery;
-            if (pageErr) {
-                qErr = pageErr;
-                break;
-            }
-            const batch = pageRows || [];
-            allQuestions.push(...batch);
-            if (batch.length < FETCH_PAGE_SIZE) break;
-            fetchFrom += FETCH_PAGE_SIZE;
-        }
-
-        if (!qErr) {
+        let allQQuery = supabase
+            .from('questions')
+            .select('id, index, stem, difficulty, subject, topics')
+            .order('index', { ascending: true, nullsFirst: false });
+        allQQuery = applyQuestionBaseFilters(allQQuery);
+        const { data: allMatchingQuestions, error: allQErr } = await allQQuery;
+        if (allQErr) {
+            qErr = allQErr;
+        } else {
+            const allQuestions = allMatchingQuestions || [];
             if (allQuestions.length === 0) {
                 questions = [];
                 count = 0;
             } else {
                 const allIds = allQuestions.map(q => q.id);
-                const { data: optionsForAll, error: optionsFilterErr } = await fetchOptionsByQuestionIds(allIds);
+                const { data: optionsForAll, error: optionsFilterErr } = await supabase
+                    .from('options')
+                    .select('question_id, explanation')
+                    .in('question_id', allIds);
                 if (optionsFilterErr) {
                     qErr = optionsFilterErr;
                 } else {

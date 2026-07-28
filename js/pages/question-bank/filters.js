@@ -2,6 +2,7 @@
  * Filter bar wiring: subject/topic dropdowns (from the static taxonomy),
  * level/explanation selects, search box, view segments, and delete-all.
  */
+import { supabase } from '../../lib/supabase.js';
 import { questionBankState, taxonomy } from './state.js';
 import { loadTaxonomy, topicsForSubject } from '../../data/taxonomy.js';
 import { HEADING_ORDER } from '../../data/headings.js';
@@ -38,6 +39,53 @@ export async function initHeadingFilter(onFilterChange) {
     }
 
     headingSelect.addEventListener('change', refetch);
+}
+
+/**
+ * Populates the exam filter from distinct exam values in the DB.
+ * @param {() => void} onFilterChange
+ */
+export async function initExamFilter(onFilterChange) {
+    const examSelect = document.getElementById('filter-exam');
+    if (!examSelect) return;
+
+    const refetch = () => {
+        questionBankState.page = 0;
+        onFilterChange();
+    };
+
+    const selected = examSelect.value;
+    examSelect.innerHTML = '';
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = 'All exams';
+    examSelect.appendChild(defaultOpt);
+
+    if (supabase) {
+        try {
+            const { data, error } = await supabase
+                .from('questions')
+                .select('exam')
+                .not('exam', 'is', null);
+            if (error) throw error;
+            const exams = [...new Set((data || []).map(r => (r.exam || '').trim()).filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b));
+            exams.forEach(exam => {
+                const opt = document.createElement('option');
+                opt.value = exam;
+                opt.textContent = exam;
+                examSelect.appendChild(opt);
+            });
+        } catch (e) {
+            console.error('Error initializing exam filter', e);
+        }
+    }
+
+    if (selected && [...examSelect.options].some(o => o.value === selected)) {
+        examSelect.value = selected;
+    }
+
+    examSelect.addEventListener('change', refetch);
 }
 
 function resetTopicDropdown() {

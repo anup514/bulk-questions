@@ -11,6 +11,7 @@ create table if not exists public.questions (
     subject text,
     topics text[],
     heading text,
+    exam text,
     index integer,
     created_at timestamptz not null default now()
 );

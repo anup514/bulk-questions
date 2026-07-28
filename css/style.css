@@ -548,6 +548,17 @@ html.dark .badge-hard { color: #fca5a5; background: rgba(185, 28, 28, 0.25); }
     font-weight: 600;
 }
 
+.badge-exam {
+    color: #0f766e;
+    background: #ccfbf1;
+    font-weight: 600;
+}
+
+html.dark .badge-exam {
+    color: #5eead4;
+    background: rgba(15, 118, 110, 0.3);
+}
+
 .meta-badge {
     cursor: pointer;
     border: 1px solid transparent;

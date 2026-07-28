@@ -7,7 +7,7 @@
 import { viewState } from './state.js';
 import { initTheme } from '../../ui/theme.js';
 import '../../ui/paste-list-fix.js';
-import { initSubjectAndTopicFilters, initHeadingFilter, wireFiltersAndSearch } from './filters.js';
+import { initSubjectAndTopicFilters, initHeadingFilter, initExamFilter, wireFiltersAndSearch } from './filters.js';
 import { loadQuestions, deleteAllQuestions } from './questions.js';
 import { loadFlashcards } from './flashcards.js';
 
@@ -26,6 +26,7 @@ function setActiveView(next) {
     const subjectFilter = document.getElementById('filter-subject');
     const topicFilter = document.getElementById('filter-topic');
     const headingFilter = document.getElementById('filter-heading');
+    const examFilter = document.getElementById('filter-exam');
     const explanationFilter = document.getElementById('filter-explanation');
     const deleteAllBtn = document.getElementById('delete-all-questions-btn');
     const qFeed = document.getElementById('question-feed');
@@ -44,6 +45,7 @@ function setActiveView(next) {
     if (subjectFilter) subjectFilter.classList.toggle('hidden', !isMcq);
     if (topicFilter) topicFilter.classList.toggle('hidden', !isMcq);
     if (headingFilter) headingFilter.classList.toggle('hidden', !isMcq);
+    if (examFilter) examFilter.classList.toggle('hidden', !isMcq);
     if (deleteAllBtn) deleteAllBtn.classList.toggle('hidden', !isMcq);
     if (explanationFilter) explanationFilter.classList.remove('hidden');
     if (qFeed) qFeed.classList.toggle('hidden', !isMcq);
@@ -64,7 +66,8 @@ ready(() => {
     initTheme();
     Promise.all([
         initSubjectAndTopicFilters(refreshActiveView),
-        initHeadingFilter(refreshActiveView)
+        initHeadingFilter(refreshActiveView),
+        initExamFilter(refreshActiveView)
     ]).finally(() => {
         wireFiltersAndSearch({
             onRefetch: refreshActiveView,
