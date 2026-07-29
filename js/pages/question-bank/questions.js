@@ -3,7 +3,7 @@
  * cards + pagination, and supports bulk delete-all.
  */
 import { supabase } from '../../lib/supabase.js';
-import { PAGE_SIZE, questionBankState } from './state.js';
+import { HIDDEN_UNTIL_INDEX, PAGE_SIZE, questionBankState } from './state.js';
 import { renderQuestionCard } from './question-card.js';
 import { renderPagination } from './pagination.js';
 import { updateFeedCount } from './feed-count.js';
@@ -50,6 +50,7 @@ export async function loadQuestions() {
     let qErr = null;
     let count = 0;
     const applyQuestionBaseFilters = (query) => {
+        if (HIDDEN_UNTIL_INDEX > 0) query = query.gt('index', HIDDEN_UNTIL_INDEX);
         if (level) query = query.eq('difficulty', level);
         if (subject) query = query.eq('subject', subject);
         if (topic) query = query.contains('topics', [topic]);
