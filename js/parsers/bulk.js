@@ -85,6 +85,88 @@ export function parseBulkRawText(text) {
     return questions;
 }
 
+/**
+ * Parses the explanations-only bulk format used to update existing questions.
+ *
+ * Format:
+ *   **524**            (or a bare `524`) sets the current question index
+ *   [correct: O1]      parsed and skipped (never written)
+ *   [O1] ...           option explanation; body may be inline or on the lines
+ *   [O2]               following the tag, until the next tag/header/separator
+ *   ---                optional separator between questions
+ *
+ * Options map O1->A, O2->B, O3->C, O4->D. Empty bodies are dropped so untouched
+ * options are left alone. `_italic_` is rewritten to `*italic*` because the app
+ * renderer only supports single-asterisk italics.
+ */
+const NUM_TO_LETTER = { 1: 'A', 2: 'B', 3: 'C', 4: 'D' };
+
+function toAppItalics(text) {
+    return text.replace(/_([^_\n]+)_/g, '*$1*');
+}
+
+export function parseExplanationsRawText(text) {
+    const byIndex = new Map();
+    let curIndex = null;
+    let curLetter = null;
+    let buf = [];
+
+    function flushOption() {
+        if (curIndex != null && curLetter != null) {
+            const body = buf.join('\n').trim();
+            if (body) {
+                byIndex.get(curIndex).set(curLetter, toAppItalics(body));
+            }
+        }
+        curLetter = null;
+        buf = [];
+    }
+
+    for (const rawLine of text.split(/\r?\n/)) {
+        const line = rawLine.replace(/\s+$/, '');
+        const stripped = line.trim();
+
+        const mHead = stripped.match(/^(?:\*\*\s*(\d+)\s*\*\*|(\d+))$/);
+        if (mHead) {
+            flushOption();
+            curIndex = parseInt(mHead[1] || mHead[2], 10);
+            if (!byIndex.has(curIndex)) byIndex.set(curIndex, new Map());
+            continue;
+        }
+        if (stripped === '---') {
+            flushOption();
+            curIndex = null;
+            continue;
+        }
+        const mCorrect = stripped.match(/^\[correct:\s*O[1-4]\]$/i);
+        if (mCorrect) {
+            flushOption();
+            continue;
+        }
+        const mOpt = stripped.match(/^\[O([1-4])\]\s*(.*)$/i);
+        if (mOpt) {
+            flushOption();
+            if (curIndex != null) {
+                curLetter = NUM_TO_LETTER[parseInt(mOpt[1], 10)];
+                buf = mOpt[2] ? [mOpt[2]] : [];
+            }
+            continue;
+        }
+        if (curLetter != null) buf.push(line);
+    }
+    flushOption();
+
+    const result = [];
+    for (const [index, opts] of byIndex) {
+        const options = [];
+        for (const [letter, explanation] of opts) {
+            options.push({ letter, explanation });
+        }
+        if (options.length) result.push({ index, options });
+    }
+    return result;
+}
+
 export function parseFlashcardRawText(text) {
     const cards = [];
     const blocks = text.split(/\[F\]/i);
